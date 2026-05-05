@@ -19,7 +19,7 @@ const openai = new OpenAI({
 
 // Configuración de Multer (en memoria)
 const storage = multer.memoryStorage();
-const upload = multer({ 
+const upload = multer({
   storage,
   limits: { fileSize: 10 * 1024 * 1024 } // 10MB máximo
 });
@@ -47,14 +47,14 @@ app.post('/api/analizar-comida', upload.single('fotoComida'), async (req, res) =
 
     // Llamada a OpenAI
     const response = await openai.chat.completions.create({
-      model: "gpt-4o",
+      model: "gpt-4o-mini",
       messages: [
         {
           role: "user",
           content: [
             {
               type: "text",
-              text: "Analyze this image of food. Please return the response strictly as a JSON object with the following keys: 'name' (string), 'calories' (number), 'protein' (number in grams), 'carbs' (number in grams), 'fat' (number in grams), 'review' (string, a short nutritional review), 'healthScore' (number from 0 to 10). Do not include any markdown formatting or extra text outside the JSON."
+              text: "Analyze food. Return JSON: {name, calories, protein, carbs, fat, review, healthScore}."
             },
             {
               type: "image_url",
@@ -65,12 +65,13 @@ app.post('/api/analizar-comida', upload.single('fotoComida'), async (req, res) =
           ],
         },
       ],
-      max_tokens: 500,
+      response_format: { type: "json_object" },
+      max_tokens: 300,
     });
 
     const jsonString = response.choices[0].message.content;
     const result = JSON.parse(jsonString.replace(/```json\n?|```/g, ''));
-    
+
     return res.status(200).json(result);
   } catch (error) {
     console.error("Server Error:", error);
@@ -91,25 +92,13 @@ app.post('/api/analizar-comida', upload.single('fotoComida'), async (req, res) =
 app.post('/api/calcular-macros', async (req, res) => {
   try {
     const profileData = req.body;
-    const prompt = `Calculate the daily nutritional targets for a user with the following profile:
-    Gender: ${profileData.gender}
-    Age: ${profileData.age} years
-    Weight: ${profileData.weight} kg
-    Height: ${profileData.height} cm
-    Goal: ${profileData.goal} (lose, maintain, or gain weight)
-    Activity Level: ${profileData.lifestyle} (sedentary, light, moderate, or very active)
-    
-    Please return the response STRICTLY as a JSON object with exactly these keys:
-    - 'targetCalories' (number)
-    - 'targetProtein' (number in grams)
-    - 'targetCarbs' (number in grams)
-    - 'targetFats' (number in grams)
-    Do not include any markdown formatting or extra text outside the JSON.`;
+    const prompt = `JSON targets for: ${profileData.gender}, ${profileData.age}y, ${profileData.weight}kg, ${profileData.height}cm, goal:${profileData.goal}, activity:${profileData.lifestyle}. Keys: {targetCalories, targetProtein, targetCarbs, targetFats}.`;
 
     const response = await openai.chat.completions.create({
-      model: "gpt-4o",
+      model: "gpt-4o-mini",
       messages: [{ role: "user", content: prompt }],
-      max_tokens: 200,
+      response_format: { type: "json_object" },
+      max_tokens: 150,
     });
 
     const jsonString = response.choices[0].message.content;

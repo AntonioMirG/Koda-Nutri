@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { User, Target, Activity, Calendar, Save, LogOut } from 'lucide-react';
 import { auth, db } from '../services/firebase';
-import { doc, getDoc, updateDoc } from 'firebase/firestore';
+import { doc, getDoc, updateDoc, collection, addDoc } from 'firebase/firestore';
 import { signOut } from 'firebase/auth';
 
 export default function Profile() {
@@ -36,6 +36,16 @@ export default function Profile() {
     try {
       const docRef = doc(db, 'users', auth.currentUser.uid);
       await updateDoc(docRef, { profile: formData });
+
+      // Create a weight history entry if the weight has changed
+      if (Number(formData.weight) !== Number(profileData.profile.weight)) {
+        const weightHistoryRef = collection(db, 'users', auth.currentUser.uid, 'weight_history');
+        await addDoc(weightHistoryRef, {
+          weight: Number(formData.weight),
+          timestamp: new Date().toISOString()
+        });
+      }
+
       setProfileData(prev => ({ ...prev, profile: formData }));
       setIsEditing(false);
     } catch (error) {
@@ -50,12 +60,12 @@ export default function Profile() {
 
   return (
     <div className="pb-24">
-      <header className="pt-12 px-6 pb-6 max-w-lg mx-auto">
+      <header className="pt-12 px-6 pb-6 max-w-7xl mx-auto">
         <h1 className="font-display font-semibold text-heading-sm tracking-tight mb-2">Profile</h1>
         <p className="text-body-sm text-graphite">Manage your goals and personal data.</p>
       </header>
 
-      <div className="px-6 max-w-lg mx-auto space-y-6">
+      <div className="px-6 max-w-7xl mx-auto space-y-6">
         
          {/* User Info Card */}
          <div className="card-white shadow-sm-soft border border-silver-mist">

@@ -1,0 +1,222 @@
+export const RECIPES_DB = [
+  {
+    id: 1,
+    name: "Lemon Garlic Butter Salmon",
+    description: "A high-protein, healthy fat meal perfect for muscle recovery.",
+    macros: { p: 35, c: 5, f: 22, calories: 360 },
+    ingredients: ["Salmon fillet", "Lemon", "Garlic", "Asparagus", "Olive oil"],
+    time: "20 min",
+    category: "High Protein",
+    image: "https://images.unsplash.com/photo-1467003909585-2f8a72700288?auto=format&fit=crop&q=80&w=800",
+    instructions: "Season salmon with garlic and lemon. Bake at 200C with asparagus for 15-20 mins."
+  },
+  {
+    id: 2,
+    name: "Quinoa Chicken Bowl",
+    description: "Balanced meal with complex carbs and lean protein.",
+    macros: { p: 40, c: 45, f: 12, calories: 450 },
+    ingredients: ["Chicken breast", "Quinoa", "Spinach", "Cherry tomatoes", "Avocado"],
+    time: "25 min",
+    category: "Balanced",
+    image: "https://images.unsplash.com/photo-1512621776951-a57141f2eefd?auto=format&fit=crop&q=80&w=800",
+    instructions: "Cook quinoa. Grill chicken. Mix in a bowl with fresh veggies and avocado."
+  },
+  {
+    id: 3,
+    name: "Tofu Stir-Fry with Broccoli",
+    description: "Plant-based protein powerhouse with fiber-rich veggies.",
+    macros: { p: 25, c: 30, f: 15, calories: 350 },
+    ingredients: ["Firm Tofu", "Broccoli", "Soy sauce", "Ginger", "Sesame oil"],
+    time: "15 min",
+    category: "Vegan",
+    image: "https://images.unsplash.com/photo-1546069901-ba9599a7e63c?auto=format&fit=crop&q=80&w=800",
+    instructions: "Press tofu, cut into cubes. Sauté with broccoli and ginger in sesame oil."
+  },
+  {
+    id: 4,
+    name: "Oatmeal with Blueberries",
+    description: "The ultimate energy-boosting breakfast.",
+    macros: { p: 15, c: 60, f: 18, calories: 460 },
+    ingredients: ["Oats", "Blueberries", "Walnuts", "Almond milk", "Honey"],
+    time: "10 min",
+    category: "Carb Load",
+    image: "https://images.unsplash.com/photo-1517673400267-0251440c45dc?auto=format&fit=crop&q=80&w=800",
+    instructions: "Cook oats with milk. Top with berries, nuts and a drizzle of honey."
+  },
+  {
+    id: 5,
+    name: "Zucchini Noodles Pesto",
+    description: "Low-carb alternative to pasta with high satiety.",
+    macros: { p: 32, c: 12, f: 25, calories: 400 },
+    ingredients: ["Zucchini", "Ground Turkey", "Basil Pesto", "Parmesan"],
+    time: "15 min",
+    category: "Low Carb",
+    image: "https://images.unsplash.com/photo-1547592166-23ac45744acd?auto=format&fit=crop&q=80&w=800",
+    instructions: "Spiralize zucchini. Brown turkey in a pan. Mix with pesto and noodles."
+  },
+  {
+    id: 6,
+    name: "Greek Yogurt Parfait",
+    description: "Quick snack or breakfast high in probiotics and protein.",
+    macros: { p: 22, c: 25, f: 5, calories: 240 },
+    ingredients: ["Greek Yogurt", "Granola", "Strawberries", "Chia seeds"],
+    time: "5 min",
+    category: "Quick Snack",
+    image: "https://images.unsplash.com/photo-1488477181946-6428a0291777?auto=format&fit=crop&q=80&w=800",
+    instructions: "Layer yogurt, fruit and granola in a glass. Sprinkle chia on top."
+  },
+  {
+    id: 7,
+    name: "Turkey & Avocado Wrap",
+    description: "Portable and filling meal for busy days.",
+    macros: { p: 28, c: 35, f: 15, calories: 380 },
+    ingredients: ["Whole wheat tortilla", "Turkey slices", "Avocado", "Hummus", "Lettuce"],
+    time: "10 min",
+    category: "Balanced",
+    image: "https://images.unsplash.com/photo-1528735602780-2552fd46c7af?auto=format&fit=crop&q=80&w=800",
+    instructions: "Spread hummus on tortilla. Add turkey, avocado and lettuce. Roll and serve."
+  },
+  {
+    id: 8,
+    name: "Lentil Soup with Kale",
+    description: "Hearty, fiber-packed vegetarian stew.",
+    macros: { p: 20, c: 55, f: 8, calories: 370 },
+    ingredients: ["Lentils", "Kale", "Carrots", "Onion", "Turmeric"],
+    time: "40 min",
+    category: "Vegan",
+    image: "https://images.unsplash.com/photo-1547592112-f32252b36e84?auto=format&fit=crop&q=80&w=800",
+    instructions: "Sauté veggies. Add lentils and water. Simmer until soft. Stir in kale at the end."
+  },
+  {
+    id: 9,
+    name: "Beef & Broccoli Bowl",
+    description: "Classic high-protein meal for muscle building.",
+    macros: { p: 38, c: 20, f: 18, calories: 390 },
+    ingredients: ["Lean beef strips", "Broccoli", "Garlic", "Sesame seeds", "Brown rice"],
+    time: "20 min",
+    category: "Bulk",
+    image: "https://images.unsplash.com/photo-1512058564366-18510be2db19?auto=format&fit=crop&q=80&w=800",
+    instructions: "Sauté beef and broccoli with garlic. Serve over brown rice."
+  },
+  {
+    id: 10,
+    name: "Shrimp Tacos with Lime",
+    description: "Light and flavorful seafood tacos.",
+    macros: { p: 25, c: 30, f: 12, calories: 330 },
+    ingredients: ["Shrimp", "Corn tortillas", "Cabbage slaw", "Lime", "Cilantro"],
+    time: "15 min",
+    category: "Balanced",
+    image: "https://images.unsplash.com/photo-1565299624946-b28f40a0ae38?auto=format&fit=crop&q=80&w=800",
+    instructions: "Grill shrimp with lime. Assemble on tortillas with slaw and cilantro."
+  },
+  {
+    id: 11,
+    name: "Açaí Recovery Bowl",
+    description: "Post-training antioxidant powerhouse.",
+    macros: { p: 8, c: 65, f: 12, calories: 410 },
+    ingredients: ["Açaí pulp", "Banana", "Granola", "Coconut flakes", "Berries"],
+    time: "10 min",
+    category: "Carb Load",
+    image: "https://images.unsplash.com/photo-1590301157890-4810ed352733?auto=format&fit=crop&q=80&w=800",
+    instructions: "Blend açaí with banana. Top with granola and coconut."
+  },
+  {
+    id: 12,
+    name: "Mediterranean Sea Bass",
+    description: "Light white fish with aromatic herbs.",
+    macros: { p: 32, c: 8, f: 14, calories: 290 },
+    ingredients: ["Sea bass", "Olives", "Tomatoes", "Parsley", "Lemon"],
+    time: "25 min",
+    category: "High Protein",
+    image: "https://images.unsplash.com/photo-1519708227418-c8fd9a32b7a2?auto=format&fit=crop&q=80&w=800",
+    instructions: "Bake sea bass with tomatoes and olives. Drizzle with lemon."
+  },
+  {
+    id: 13,
+    name: "Lentil Pasta Bolognese",
+    description: "Healthy twist on the Italian classic.",
+    macros: { p: 28, c: 55, f: 10, calories: 420 },
+    ingredients: ["Lentil pasta", "Lean ground beef", "Tomato sauce", "Carrots", "Onion"],
+    time: "20 min",
+    category: "Balanced",
+    image: "https://images.unsplash.com/photo-1551183053-bf91a1d81141?auto=format&fit=crop&q=80&w=800",
+    instructions: "Cook pasta. Brown beef with veggies. Simmer in sauce."
+  },
+  {
+    id: 14,
+    name: "Peanut Tofu Buddha Bowl",
+    description: "Creamy peanut sauce over fresh plant-based protein.",
+    macros: { p: 24, c: 40, f: 18, calories: 450 },
+    ingredients: ["Tofu", "Brown rice", "Peanut butter", "Cucumber", "Edamame"],
+    time: "20 min",
+    category: "Vegan",
+    image: "https://images.unsplash.com/photo-1511690656952-34342bb7c2f2?auto=format&fit=crop&q=80&w=800",
+    instructions: "Assemble rice and tofu. Drizzle with homemade peanut sauce."
+  },
+  {
+    id: 15,
+    name: "Grilled Turkey & Asparagus",
+    description: "Simple, effective, and extremely lean.",
+    macros: { p: 42, c: 4, f: 6, calories: 250 },
+    ingredients: ["Turkey breast", "Asparagus", "Black pepper", "Lemon juice"],
+    time: "15 min",
+    category: "High Protein",
+    image: "https://images.unsplash.com/photo-1432139555190-58524dae6a55?auto=format&fit=crop&q=80&w=800",
+    instructions: "Grill turkey and asparagus with minimal oil. Season with lemon."
+  },
+  {
+    id: 16,
+    name: "Avocado & Egg Toast",
+    description: "The classic nutrient-dense start to your day.",
+    macros: { p: 16, c: 30, f: 22, calories: 380 },
+    ingredients: ["Sourdough", "Avocado", "Poached Egg", "Red pepper flakes"],
+    time: "10 min",
+    category: "Balanced",
+    image: "https://images.unsplash.com/photo-1525351484163-7529414344d8?auto=format&fit=crop&q=80&w=800",
+    instructions: "Mash avocado on toast. Top with a perfect poached egg."
+  },
+  {
+    id: 17,
+    name: "Chickpea Coconut Curry",
+    description: "Warm and comforting plant-based curry.",
+    macros: { p: 18, c: 55, f: 20, calories: 480 },
+    ingredients: ["Chickpeas", "Coconut milk", "Curry powder", "Rice", "Spinach"],
+    time: "30 min",
+    category: "Vegan",
+    image: "https://images.unsplash.com/photo-1585937421612-70a008356fbe?auto=format&fit=crop&q=80&w=800",
+    instructions: "Simmer chickpeas in coconut milk and spices. Serve with rice."
+  },
+  {
+    id: 18,
+    name: "Grilled Steak & Salad",
+    description: "Iron-rich meal for strength and stamina.",
+    macros: { p: 45, c: 10, f: 25, calories: 460 },
+    ingredients: ["Sirloin steak", "Arugula", "Balsamic glaze", "Parmesan"],
+    time: "15 min",
+    category: "High Protein",
+    image: "https://images.unsplash.com/photo-1546241072-48010ad28c2c?auto=format&fit=crop&q=80&w=800",
+    instructions: "Sear steak to preference. Serve over fresh arugula with glaze."
+  },
+  {
+    id: 19,
+    name: "Banana Protein Pancakes",
+    description: "Fluffy pancakes without the sugar crash.",
+    macros: { p: 32, c: 35, f: 10, calories: 360 },
+    ingredients: ["Protein powder", "Banana", "Egg whites", "Cinnamon"],
+    time: "15 min",
+    category: "High Protein",
+    image: "https://images.unsplash.com/photo-1528207776546-365bb710ee93?auto=format&fit=crop&q=80&w=800",
+    instructions: "Blend all ingredients. Cook on a non-stick griddle."
+  },
+  {
+    id: 20,
+    name: "Roasted Veggie Pasta",
+    description: "Fiber-packed and colorful pasta bowl.",
+    macros: { p: 12, c: 70, f: 15, calories: 490 },
+    ingredients: ["Whole wheat penne", "Bell peppers", "Zucchini", "Olive oil"],
+    time: "30 min",
+    category: "Carb Load",
+    image: "https://images.unsplash.com/photo-1473093226795-af9932fe5856?auto=format&fit=crop&q=80&w=800",
+    instructions: "Roast veggies. Mix with cooked pasta and olive oil."
+  }
+];
