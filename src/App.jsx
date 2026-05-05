@@ -45,7 +45,7 @@ function App() {
   if (loading) {
     return (
       <div className="min-h-screen bg-fog flex items-center justify-center">
-        <div className="animate-pulse text-ink font-display text-heading-sm font-semibold">Nutri-AI Pro</div>
+        <div className="animate-pulse text-ink font-display text-heading-sm font-semibold">Koda</div>
       </div>
     );
   }

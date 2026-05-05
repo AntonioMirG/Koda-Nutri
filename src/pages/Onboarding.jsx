@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { auth, db } from '../services/firebase';
-import { doc, setDoc } from 'firebase/firestore';
+import { doc, setDoc, collection } from 'firebase/firestore';
 import { Sparkles, ArrowRight, ArrowLeft } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { calculateOnboardingMacros } from '../services/openai';
@@ -42,6 +42,14 @@ export default function Onboarding({ onComplete }) {
         targets: calculatedMacros,
         createdAt: new Date().toISOString()
       });
+
+      // Save initial weight record
+      const weightHistoryRef = doc(collection(db, 'users', auth.currentUser.uid, 'weight_history'));
+      await setDoc(weightHistoryRef, {
+        weight: Number(formData.weight),
+        timestamp: new Date().toISOString()
+      });
+
       onComplete();
     } catch (error) {
       console.error("Error saving profile or calculating macros:", error);

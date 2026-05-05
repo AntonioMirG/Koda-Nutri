@@ -57,65 +57,77 @@ export default function Profile() {
 
       <div className="px-6 max-w-lg mx-auto space-y-6">
         
-        {/* User Info Card */}
-        <div className="card-white shadow-sm-soft border border-silver-mist">
-           <div className="flex justify-between items-center mb-6">
-             <div className="flex items-center space-x-3">
-               <div className="w-12 h-12 bg-fog rounded-full flex items-center justify-center border border-silver-mist">
-                 <User className="w-6 h-6 text-ink" />
-               </div>
-               <div>
-                 <div className="font-semibold text-body-sm">{auth.currentUser?.email}</div>
-                 <div className="text-caption text-graphite">Nutri-AI Pro Member</div>
-               </div>
-             </div>
-             {!isEditing ? (
-               <button onClick={() => setIsEditing(true)} className="text-cobalt-link text-body-sm hover:underline">Edit</button>
-             ) : (
-               <button onClick={handleSave} disabled={loading} className="text-azure font-medium text-body-sm hover:opacity-70 flex items-center"><Save className="w-4 h-4 mr-1"/> Save</button>
-             )}
-           </div>
+         {/* User Info Card */}
+         <div className="card-white shadow-sm-soft border border-silver-mist">
+            <div className="flex items-center mb-6">
+              <div className="w-12 h-12 bg-fog rounded-full flex items-center justify-center border border-silver-mist mr-3">
+                <User className="w-6 h-6 text-ink" />
+              </div>
+              <div>
+                <div className="font-semibold text-body-sm truncate max-w-[180px]">
+                  {auth.currentUser?.displayName || auth.currentUser?.email?.split('@')[0]}
+                </div>
+                <div className="text-caption text-graphite">Koda Pro Member</div>
+              </div>
+            </div>
+ 
+            {formData && (
+              <div className="grid grid-cols-2 gap-4 mb-6">
+                <div>
+                  <label className="block text-[10px] text-graphite uppercase font-semibold mb-1">Age</label>
+                  {isEditing ? (
+                    <input type="number" value={formData.age} onChange={e => setFormData({...formData, age: e.target.value})} className="w-full bg-fog border border-silver-mist rounded p-2 text-body-sm" />
+                  ) : (
+                    <div className="font-medium text-body-sm">{formData.age} yrs</div>
+                  )}
+                </div>
+                <div>
+                  <label className="block text-[10px] text-graphite uppercase font-semibold mb-1">Gender</label>
+                  {isEditing ? (
+                    <select value={formData.gender} onChange={e => setFormData({...formData, gender: e.target.value})} className="w-full bg-fog border border-silver-mist rounded p-2 text-body-sm">
+                      <option value="Male">Male</option>
+                      <option value="Female">Female</option>
+                    </select>
+                  ) : (
+                    <div className="font-medium text-body-sm">{formData.gender}</div>
+                  )}
+                </div>
+                <div>
+                  <label className="block text-[10px] text-graphite uppercase font-semibold mb-1">Weight (kg)</label>
+                  {isEditing ? (
+                    <input type="number" value={formData.weight} onChange={e => setFormData({...formData, weight: e.target.value})} className="w-full bg-fog border border-silver-mist rounded p-2 text-body-sm" />
+                  ) : (
+                    <div className="font-medium text-body-sm">{formData.weight} kg</div>
+                  )}
+                </div>
+                <div>
+                  <label className="block text-[10px] text-graphite uppercase font-semibold mb-1">Height (cm)</label>
+                  {isEditing ? (
+                    <input type="number" value={formData.height} onChange={e => setFormData({...formData, height: e.target.value})} className="w-full bg-fog border border-silver-mist rounded p-2 text-body-sm" />
+                  ) : (
+                    <div className="font-medium text-body-sm">{formData.height} cm</div>
+                  )}
+                </div>
+              </div>
+            )}
 
-           {formData && (
-             <div className="grid grid-cols-2 gap-4">
-               <div>
-                 <label className="block text-[10px] text-graphite uppercase font-semibold mb-1">Age</label>
-                 {isEditing ? (
-                   <input type="number" value={formData.age} onChange={e => setFormData({...formData, age: e.target.value})} className="w-full bg-fog border border-silver-mist rounded p-2 text-body-sm" />
-                 ) : (
-                   <div className="font-medium text-body-sm">{formData.age} yrs</div>
-                 )}
-               </div>
-               <div>
-                 <label className="block text-[10px] text-graphite uppercase font-semibold mb-1">Gender</label>
-                 {isEditing ? (
-                   <select value={formData.gender} onChange={e => setFormData({...formData, gender: e.target.value})} className="w-full bg-fog border border-silver-mist rounded p-2 text-body-sm">
-                     <option value="Male">Male</option>
-                     <option value="Female">Female</option>
-                   </select>
-                 ) : (
-                   <div className="font-medium text-body-sm">{formData.gender}</div>
-                 )}
-               </div>
-               <div>
-                 <label className="block text-[10px] text-graphite uppercase font-semibold mb-1">Weight (kg)</label>
-                 {isEditing ? (
-                   <input type="number" value={formData.weight} onChange={e => setFormData({...formData, weight: e.target.value})} className="w-full bg-fog border border-silver-mist rounded p-2 text-body-sm" />
-                 ) : (
-                   <div className="font-medium text-body-sm">{formData.weight} kg</div>
-                 )}
-               </div>
-               <div>
-                 <label className="block text-[10px] text-graphite uppercase font-semibold mb-1">Height (cm)</label>
-                 {isEditing ? (
-                   <input type="number" value={formData.height} onChange={e => setFormData({...formData, height: e.target.value})} className="w-full bg-fog border border-silver-mist rounded p-2 text-body-sm" />
-                 ) : (
-                   <div className="font-medium text-body-sm">{formData.height} cm</div>
-                 )}
-               </div>
-             </div>
-           )}
-        </div>
+            {!isEditing ? (
+              <button 
+                onClick={() => setIsEditing(true)} 
+                className="w-full bg-fog border border-silver-mist py-3 rounded-xl text-ink text-body-sm font-semibold hover:bg-silver-mist transition-colors"
+              >
+                Edit Personal Data
+              </button>
+            ) : (
+              <button 
+                onClick={handleSave} 
+                disabled={loading} 
+                className="w-full bg-ink text-snow py-3 rounded-xl text-body-sm font-semibold hover:opacity-90 flex items-center justify-center shadow-md active:scale-95 transition-transform"
+              >
+                <Save className="w-4 h-4 mr-2"/> Save Changes
+              </button>
+            )}
+         </div>
 
         {/* Goals & Targets */}
         {profileData?.targets && (
@@ -170,7 +182,7 @@ export default function Profile() {
         </div>
 
         <button onClick={handleLogout} className="w-full text-center py-4 text-[#ff3b30] font-medium text-body-sm mt-4 hover:bg-[#ff3b30]/10 rounded-small transition-colors">
-          Sign Out from Nutri-AI
+          Sign Out from Koda
         </button>
 
       </div>

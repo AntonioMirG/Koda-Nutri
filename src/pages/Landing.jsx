@@ -44,7 +44,7 @@ export default function Landing({ onAuthSuccess }) {
       <nav className="bg-fog/80 backdrop-blur-md h-[44px] flex items-center px-6 max-w-[1024px] mx-auto z-50 fixed top-0 left-0 right-0 justify-between">
         <div className="flex items-center space-x-2 text-[14px] font-semibold text-ink">
           <Apple className="w-4 h-4" />
-          <span>Nutri-AI Pro</span>
+          <span>Koda</span>
         </div>
       </nav>
 
@@ -64,7 +64,7 @@ export default function Landing({ onAuthSuccess }) {
           {/* Auth Panel */}
           <div className="card-white shadow-[0_4px_24px_rgba(0,0,0,0.04)] relative z-10 p-8 border border-silver-mist/50">
             <h2 className="font-display font-semibold text-heading-sm text-ink tracking-tight mb-2">
-              {isLogin ? 'Sign in to Nutri-AI' : 'Create your account'}
+              {isLogin ? 'Sign in to Koda' : 'Create your account'}
             </h2>
             <p className="text-body-sm text-graphite mb-6">
               {isLogin ? 'Welcome back. Let\'s check those macros.' : 'Start your health journey today.'}
