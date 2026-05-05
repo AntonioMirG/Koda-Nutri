@@ -1,7 +1,8 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import { Camera, Home, BarChart2, Settings, Plus, X, Activity, Flame, Droplet, Beef, TrendingDown, TrendingUp, Trophy } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { auth, db } from '../services/firebase';
+import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
+import { auth, db, storage } from '../services/firebase';
 import { signOut } from 'firebase/auth';
 import { doc, getDoc, collection, addDoc, query, where, getDocs, orderBy, limit } from 'firebase/firestore';
 import Profile from './Profile';
@@ -17,8 +18,10 @@ export default function Dashboard() {
   const [selectedDay, setSelectedDay] = useState('today'); // 'today' or 'yesterday'
   const [isScanning, setIsScanning] = useState(false);
   const [selectedImage, setSelectedImage] = useState(null);
+  const [currentFile, setCurrentFile] = useState(null);
   const [isAnalyzing, setIsAnalyzing] = useState(false);
   const [analysisResult, setAnalysisResult] = useState(null);
+  const [loading, setLoading] = useState(false);
   
   const [userData, setUserData] = useState(null);
   const [allMeals, setAllMeals] = useState([]);
@@ -62,16 +65,46 @@ export default function Dashboard() {
     }
   };
 
+  const compressImage = (file, maxWidth = 512, quality = 0.7) => {
+    return new Promise((resolve) => {
+      const reader = new FileReader();
+      reader.readAsDataURL(file);
+      reader.onload = (event) => {
+        const img = new Image();
+        img.src = event.target.result;
+        img.onload = () => {
+          const canvas = document.createElement('canvas');
+          let width = img.width;
+          let height = img.height;
+          if (width > maxWidth) {
+            height = (maxWidth / width) * height;
+            width = maxWidth;
+          }
+          canvas.width = width;
+          canvas.height = height;
+          const ctx = canvas.getContext('2d');
+          ctx.drawImage(img, 0, 0, width, height);
+          canvas.toBlob((blob) => {
+            resolve(new File([blob], file.name.replace(/\.[^/.]+$/, "") + ".webp", { type: 'image/webp' }));
+          }, 'image/webp', quality);
+        };
+      };
+    });
+  };
+
   const handleImageUpload = async (e) => {
-    const file = e.target.files[0];
-    if (file) {
-      const localUrl = URL.createObjectURL(file);
-      setSelectedImage(localUrl);
+    const originalFile = e.target.files[0];
+    if (originalFile) {
       setIsAnalyzing(true);
       setAnalysisResult(null);
       
       try {
-        const result = await analyzeFoodImage(file);
+        const compressedFile = await compressImage(originalFile);
+        const localUrl = URL.createObjectURL(compressedFile);
+        setSelectedImage(localUrl);
+        setCurrentFile(compressedFile);
+
+        const result = await analyzeFoodImage(compressedFile);
         const mealWithMetadata = { 
           ...result, 
           image: localUrl, 
@@ -89,8 +122,18 @@ export default function Dashboard() {
   };
 
   const confirmMeal = async () => {
-    if (analysisResult && auth.currentUser) {
+    if (analysisResult && auth.currentUser && currentFile) {
       try {
+        setLoading(true);
+        // 1. Upload to Firebase Storage
+        const fileExtension = currentFile.name.split('.').pop();
+        const fileName = `${Date.now()}.${fileExtension}`;
+        const storageRef = ref(storage, `users/${auth.currentUser.uid}/meals/${fileName}`);
+        
+        await uploadBytes(storageRef, currentFile);
+        const downloadURL = await getDownloadURL(storageRef);
+
+        // 2. Save to Firestore with the REAL URL
         const mealsRef = collection(db, 'users', auth.currentUser.uid, 'meals');
         await addDoc(mealsRef, {
           name: analysisResult.name,
@@ -102,11 +145,15 @@ export default function Dashboard() {
           review: analysisResult.review,
           timestamp: analysisResult.timestamp,
           time: analysisResult.time,
-          image: analysisResult.image // Note: For real prod, you'd upload to Storage first
+          image: downloadURL
         });
-        setAllMeals(prev => [analysisResult, ...prev]);
+        
+        setAllMeals(prev => [{ ...analysisResult, image: downloadURL }, ...prev]);
       } catch (error) {
         console.error("Error saving meal:", error);
+        alert("Failed to save meal image. Check your Firebase Storage rules.");
+      } finally {
+        setLoading(false);
       }
     }
     closeScanner();
@@ -582,7 +629,13 @@ export default function Dashboard() {
                   </div>
                   <div className="flex space-x-3 pb-6">
                     <button onClick={closeScanner} className="bg-fog text-ink flex-1 py-4 font-semibold rounded-[24px] text-body-sm transition-colors hover:bg-silver-mist">Discard</button>
-                    <button onClick={confirmMeal} className="bg-ink text-snow flex-1 py-4 font-semibold rounded-[24px] text-body-sm shadow-[0_4px_12px_rgba(0,0,0,0.1)] transition-transform hover:scale-[1.02]">Save Meal</button>
+                    <button 
+                      onClick={confirmMeal} 
+                      disabled={loading}
+                      className="bg-ink text-snow flex-1 py-4 font-semibold rounded-[24px] text-body-sm shadow-[0_4px_12px_rgba(0,0,0,0.1)] transition-transform hover:scale-[1.02] disabled:opacity-50 disabled:cursor-not-allowed"
+                    >
+                      {loading ? 'Saving...' : 'Save Meal'}
+                    </button>
                   </div>
                 </motion.div>
               )}
