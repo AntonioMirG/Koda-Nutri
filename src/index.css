@@ -1,4 +1,4 @@
-@import url('https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,100..900;1,9..144,100..900&family=Inter:ital,opsz,wght@0,14..32,100..900;1,14..32,100..900&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
 
 @tailwind base;
 @tailwind components;
@@ -6,33 +6,43 @@
 
 @layer base {
   body {
-    @apply bg-canvas text-graphite font-sans antialiased;
+    @apply bg-fog text-ink font-sans antialiased;
     min-height: 100vh;
   }
 }
 
 @layer components {
-  .feature-card-white {
-    @apply bg-white rounded-card p-8 shadow-subtle-inset;
-  }
-
-  .feature-card-cream {
-    @apply bg-parchment rounded-xl p-5;
-  }
-
-  .btn-pill-dark {
-    @apply bg-midnight text-white rounded-pill px-4 py-2 font-medium transition-colors hover:bg-charcoal text-sm;
-  }
-
-  .btn-pill-light {
-    @apply bg-[#f6f4ef] text-midnight rounded-pill px-4 py-2 font-medium transition-colors hover:bg-stone-surface text-sm;
+  .btn-primary {
+    @apply bg-azure text-snow rounded-pill px-4 py-2 font-sans text-body-sm font-normal transition-colors hover:bg-cobalt-link;
   }
 
   .btn-ghost {
-    @apply text-ember bg-transparent font-medium py-1 hover:opacity-80 transition-opacity text-sm;
+    @apply bg-transparent text-ink font-sans text-body font-normal hover:opacity-70 transition-opacity;
   }
 
-  .phone-mockup {
-    @apply bg-obsidian text-white rounded-t-card-lg rounded-b-card-lg shadow-lg-soft p-1;
+  .btn-dark {
+    @apply bg-obsidian text-snow rounded-pill px-4 py-2 font-sans text-body-sm font-normal transition-colors hover:bg-ink;
+  }
+
+  .btn-frosted {
+    background-color: rgba(210, 210, 215, 0.64);
+    backdrop-filter: blur(20px);
+    @apply text-ink rounded-pill px-4 py-2 font-sans text-body-sm font-normal transition-colors hover:bg-opacity-80;
+  }
+
+  .card-white {
+    @apply bg-snow rounded-card p-7 shadow-none;
+  }
+
+  .card-fog {
+    @apply bg-fog rounded-card p-7 shadow-none;
+  }
+
+  .card-dark {
+    @apply bg-obsidian text-snow rounded-card p-7 shadow-none;
+  }
+
+  .link-inline {
+    @apply text-cobalt-link hover:underline cursor-pointer;
   }
 }

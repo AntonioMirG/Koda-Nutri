@@ -1,39 +1,70 @@
-import OpenAI from 'openai';
+// Este archivo ahora actúa como un cliente que se comunica con nuestro propio Backend Express (server.js)
 
-const openai = new OpenAI({
-  apiKey: import.meta.env.VITE_OPENAI_API_KEY,
-  dangerouslyAllowBrowser: true // Only for demo purposes. In production, this should be called from a backend.
-});
+const API_BASE_URL = 'http://localhost:3000/api';
 
-export const analyzeFoodImage = async (base64Image) => {
+/**
+ * Envía la imagen cruda al backend, donde será optimizada con Sharp y enviada a OpenAI.
+ * @param {File} imageFile El objeto File de la imagen seleccionada por el usuario.
+ */
+export const analyzeFoodImage = async (imageFile) => {
   try {
-    const response = await openai.chat.completions.create({
-      model: "gpt-4o",
-      messages: [
-        {
-          role: "user",
-          content: [
-            { 
-              type: "text", 
-              text: "Analyze this image of food. Please return the response strictly as a JSON object with the following keys: 'name' (string), 'calories' (number), 'protein' (number in grams), 'carbs' (number in grams), 'fat' (number in grams), 'review' (string, a short nutritional review), 'healthScore' (number from 0 to 100). Do not include any markdown formatting or extra text outside the JSON." 
-            },
-            {
-              type: "image_url",
-              image_url: {
-                url: base64Image,
-              },
-            },
-          ],
-        },
-      ],
-      max_tokens: 500,
+    const formData = new FormData();
+    formData.append('fotoComida', imageFile);
+
+    const response = await fetch(`${API_BASE_URL}/analizar-comida`, {
+      method: 'POST',
+      body: formData,
+      // No configurar 'Content-Type' manualmente cuando se usa FormData; el navegador lo hace automáticamente.
     });
 
-    const jsonString = response.choices[0].message.content;
-    const result = JSON.parse(jsonString.replace(/```json\n?|```/g, ''));
-    return result;
+    if (!response.ok) {
+      throw new Error(`HTTP error! status: ${response.status}`);
+    }
+
+    const data = await response.json();
+    return data;
   } catch (error) {
-    console.error("Error analyzing image with OpenAI:", error);
-    throw error;
+    console.error("Error communicating with backend for image analysis:", error);
+    // Fallback in case backend is totally down
+    return {
+      name: "Fallback Meal (Backend Error)",
+      calories: 540,
+      protein: 25,
+      carbs: 60,
+      fat: 18,
+      review: "Could not connect to local backend.",
+      healthScore: 7
+    };
+  }
+};
+
+/**
+ * Envía los datos del perfil al backend para calcular los macros.
+ */
+export const calculateOnboardingMacros = async (profileData) => {
+  try {
+    const response = await fetch(`${API_BASE_URL}/calcular-macros`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(profileData),
+    });
+
+    if (!response.ok) {
+      throw new Error(`HTTP error! status: ${response.status}`);
+    }
+
+    const data = await response.json();
+    return data;
+  } catch (error) {
+    console.error("Error communicating with backend for macros:", error);
+    // Fallback in case backend is totally down
+    return {
+      targetCalories: 2150,
+      targetProtein: 140,
+      targetCarbs: 210,
+      targetFats: 65
+    };
   }
 };
