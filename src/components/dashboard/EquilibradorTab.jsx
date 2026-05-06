@@ -8,54 +8,54 @@ export default function EquilibradorTab({
   filteredRecipes, setSelectedRecipe 
 }) {
   return (
-    <div className="pt-12 px-6 max-w-7xl mx-auto">
-      <header className="mb-10 text-center">
-        <div className="w-16 h-16 bg-ink text-snow rounded-2xl flex items-center justify-center mx-auto mb-4 shadow-lg">
-          <Trophy className="w-8 h-8" />
+    <div className="pt-8 md:pt-12 px-4 md:px-6 max-w-7xl mx-auto">
+      <header className="mb-8 md:mb-10 text-center">
+        <div className="w-12 h-12 md:w-16 md:h-16 bg-ink text-snow rounded-2xl flex items-center justify-center mx-auto mb-4 shadow-lg">
+          <Trophy className="w-6 h-6 md:w-8 md:h-8" />
         </div>
-        <h1 className="font-display font-semibold text-heading-sm mb-2">Macro Equilibrador</h1>
-        <p className="text-body-sm text-graphite px-4">Based on what you've eaten today, here is the ideal combination for your next meal.</p>
+        <h1 className="font-display font-semibold text-[22px] md:text-heading-md mb-2">Macro Equilibrador</h1>
+        <p className="text-[13px] md:text-body-sm text-graphite max-w-xs md:max-w-md mx-auto">Based on what you've eaten today, here is the ideal combination.</p>
       </header>
 
-      <div className="space-y-6">
-        <div className="card-white p-6 border border-silver-mist/50 shadow-sm-soft">
-          <h3 className="text-[11px] font-bold text-graphite uppercase tracking-widest mb-6 text-center">Remaining to hit target</h3>
-          <div className="flex justify-around mb-2">
+      <div className="space-y-4 md:space-y-6">
+        <div className="card-white p-4 md:p-6 border border-silver-mist/50 shadow-sm-soft">
+          <h3 className="text-[9px] md:text-[11px] font-bold text-graphite uppercase tracking-widest mb-4 md:mb-6 text-center">Remaining to hit target</h3>
+          <div className="grid grid-cols-3 gap-1 md:gap-2 mb-1">
             <div className="text-center">
-              <div className="text-heading-sm font-bold text-[#ff3b30]">{Math.max(0, targets.targetProtein - consumedMacros.protein)}g</div>
-              <div className="text-[10px] text-graphite font-bold uppercase">Protein</div>
+              <div className="text-[16px] md:text-heading-sm font-bold text-[#ff3b30]">{Math.max(0, targets.targetProtein - consumedMacros.protein)}g</div>
+              <div className="text-[8px] md:text-[10px] text-graphite font-bold uppercase">Protein</div>
+            </div>
+            <div className="text-center border-x border-silver-mist/30">
+              <div className="text-[16px] md:text-heading-sm font-bold text-[#ff9500]">{Math.max(0, targets.targetCarbs - consumedMacros.carbs)}g</div>
+              <div className="text-[8px] md:text-[10px] text-graphite font-bold uppercase">Carbs</div>
             </div>
             <div className="text-center">
-              <div className="text-heading-sm font-bold text-[#ff9500]">{Math.max(0, targets.targetCarbs - consumedMacros.carbs)}g</div>
-              <div className="text-[10px] text-graphite font-bold uppercase">Carbs</div>
-            </div>
-            <div className="text-center">
-              <div className="text-heading-sm font-bold text-[#0071e3]">{Math.max(0, targets.targetFats - consumedMacros.fat)}g</div>
-              <div className="text-[10px] text-graphite font-bold uppercase">Fats</div>
+              <div className="text-[16px] md:text-heading-sm font-bold text-[#0071e3]">{Math.max(0, targets.targetFats - consumedMacros.fat)}g</div>
+              <div className="text-[8px] md:text-[10px] text-graphite font-bold uppercase">Fats</div>
             </div>
           </div>
         </div>
 
-        <div className="bg-ink text-snow rounded-[32px] p-8 shadow-xl relative overflow-hidden">
+        <div className="bg-ink text-snow rounded-[20px] md:rounded-[32px] p-5 md:p-8 shadow-xl relative overflow-hidden">
           <div className="absolute top-0 right-0 w-32 h-32 bg-snow/5 rounded-full -mr-16 -mt-16"></div>
-          <h3 className="font-display font-semibold text-body mb-6 relative z-10">Koda Recommended Meal</h3>
+          <h3 className="font-display font-semibold text-[14px] md:text-body mb-5 relative z-10">Koda Recommended Meal</h3>
 
           {typeof solution === 'string' ? (
-            <p className="text-snow/70 italic">{solution}</p>
+            <p className="text-snow/70 italic text-[13px]">{solution}</p>
           ) : (
-            <div className="space-y-4 relative z-10">
+            <div className="space-y-3 md:space-y-4 relative z-10">
               {solution.map((item, i) => (
-                <div key={i} className="flex justify-between items-center border-b border-snow/10 pb-4 last:border-0 last:pb-0">
-                  <span className="font-medium">{item.name}</span>
+                <div key={i} className="flex justify-between items-center border-b border-snow/10 pb-3 md:pb-4 last:border-0 last:pb-0">
+                  <span className="font-medium text-[13px] md:text-body-sm max-w-[60%]">{item.name}</span>
                   <div className="flex items-baseline">
-                    <span className="text-[24px] font-bold mr-1">{item.amount}</span>
-                    <span className="text-[14px] opacity-60 font-medium">{item.unit}</span>
+                    <span className="text-[18px] md:text-[24px] font-bold mr-1">{item.amount}</span>
+                    <span className="text-[11px] md:text-[14px] opacity-60 font-medium">{item.unit}</span>
                   </div>
                 </div>
               ))}
-              <div className="pt-4 mt-2">
-                <p className="text-[11px] text-snow/50 italic leading-relaxed">
-                  *Weights are for cooked food. This combination perfectly balances your remaining macros for the day.
+              <div className="pt-3 md:pt-4 mt-1 md:mt-2">
+                <p className="text-[9px] md:text-[11px] text-snow/50 italic leading-relaxed">
+                  *Weights are for cooked food.
                 </p>
               </div>
             </div>
@@ -63,10 +63,10 @@ export default function EquilibradorTab({
         </div>
 
         <div className="p-4 bg-fog rounded-2xl flex items-center space-x-3 border border-silver-mist/30 mb-8">
-          <div className="w-8 h-8 bg-ink/5 rounded-full flex items-center justify-center">
+          <div className="w-8 h-8 bg-ink/5 rounded-full flex items-center justify-center flex-shrink-0">
             <Activity className="w-4 h-4 text-ink" />
           </div>
-          <p className="text-[11px] text-graphite leading-snug">
+          <p className="text-[10px] md:text-[11px] text-graphite leading-snug">
             This calculator uses <b>Zero-Token Logic</b> based on local mathematical heuristics.
           </p>
         </div>

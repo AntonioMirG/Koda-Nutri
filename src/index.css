@@ -9,6 +9,15 @@
     @apply bg-fog text-ink font-sans antialiased;
     min-height: 100vh;
   }
+
+  /* Remove unwanted focus outlines and tap highlights */
+  * {
+    -webkit-tap-highlight-color: transparent;
+  }
+  
+  *:focus {
+    outline: none !important;
+  }
 }
 
 @layer components {

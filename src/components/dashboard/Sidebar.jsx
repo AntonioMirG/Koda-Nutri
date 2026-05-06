@@ -4,7 +4,7 @@ import { signOut } from 'firebase/auth';
 
 export default function Sidebar({ activeTab, setActiveTab, setIsScanning, auth }) {
   return (
-    <aside className="hidden md:flex flex-col w-64 bg-snow border-r border-silver-mist h-screen sticky top-0 z-40 p-6">
+    <aside className="flex flex-col w-full h-full p-6">
       <div className="mb-10">
         <span className="font-display font-bold text-heading-sm tracking-tight">Koda</span>
       </div>

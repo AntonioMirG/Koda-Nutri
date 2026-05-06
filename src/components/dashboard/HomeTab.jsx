@@ -1,15 +1,39 @@
-import React from 'react';
+import React, { memo } from 'react';
 import { motion } from 'framer-motion';
 import { Flame, Droplet, Plus, Activity, Beef } from 'lucide-react';
 
-export default function HomeTab({ 
+const HomeTab = memo(({ 
   auth, streak, selectedDay, setSelectedDay, caloriesLeft, isOverGoal, 
   circumference, dashOffset, consumedMacros, protPercent, carbPercent, fatPercent, 
   waterIntake, waterTarget, updateWater, fasting, currentTime, toggleFast, 
   displayedMeals, setSelectedLoggedMeal 
-}) {
+}) => {
+  const containerVariants = {
+    hidden: { opacity: 0 },
+    visible: {
+      opacity: 1,
+      transition: {
+        staggerChildren: 0.1
+      }
+    }
+  };
+
+  const itemVariants = {
+    hidden: { opacity: 0, y: 20 },
+    visible: { 
+      opacity: 1, 
+      y: 0,
+      transition: { duration: 0.5, ease: "easeOut" }
+    }
+  };
+
   return (
-    <div className="pt-12 px-6 pb-32 max-w-7xl mx-auto">
+    <motion.div 
+      variants={containerVariants}
+      initial="hidden"
+      animate="visible"
+      className="pt-12 px-4 md:px-6 pb-32 max-w-7xl mx-auto"
+    >
       <header className="mb-10 text-center md:text-left">
         <div className="flex justify-between items-center mb-6">
           <div className="flex items-center space-x-3">
@@ -43,7 +67,7 @@ export default function HomeTab({
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-12">
         {/* Main Progress Circle */}
-        <div className="card-white p-8 flex flex-col items-center justify-center border border-silver-mist/50 shadow-sm-soft">
+        <motion.div variants={itemVariants} className="card-white p-8 flex flex-col items-center justify-center border border-silver-mist/50 shadow-sm-soft">
           <h3 className="text-[11px] font-bold text-graphite uppercase tracking-widest mb-6">Daily Calories</h3>
           <div className="relative w-40 h-40 flex items-center justify-center">
             <svg className="w-full h-full transform -rotate-90">
@@ -71,10 +95,10 @@ export default function HomeTab({
               <span className="text-[10px] text-graphite font-bold uppercase mt-1">{caloriesLeft > 0 ? 'kcal left' : 'kcal over'}</span>
             </div>
           </div>
-        </div>
+        </motion.div>
 
         {/* Macros Rings */}
-        <div className="card-white p-8 flex flex-col justify-center border border-silver-mist/50 shadow-sm-soft">
+        <motion.div variants={itemVariants} className="card-white p-8 flex flex-col justify-center border border-silver-mist/50 shadow-sm-soft">
           <h3 className="text-[11px] font-bold text-graphite uppercase tracking-widest mb-8 text-center">Macros Status</h3>
           <div className="flex justify-around">
             {[
@@ -112,10 +136,10 @@ export default function HomeTab({
               );
             })}
           </div>
-        </div>
+        </motion.div>
 
         {/* Water & Fasting Column */}
-        <div className="grid grid-cols-1 gap-4">
+        <motion.div variants={itemVariants} className="grid grid-cols-1 gap-4">
           {/* Water Widget */}
           <div className="card-white p-5 flex items-center justify-between border border-silver-mist/50 shadow-sm-soft">
             <div className="flex items-center">
@@ -125,12 +149,18 @@ export default function HomeTab({
               </motion.div>
               <div>
                 <h3 className="font-bold text-[11px] uppercase tracking-wider text-graphite mb-1">Water</h3>
-                <div className="text-body-sm font-bold">{waterIntake}/{waterTarget}</div>
+                <div className="flex items-baseline space-x-1">
+                  <span className="text-body-sm font-bold">{((waterIntake * 250) / 1000).toFixed(2)}L</span>
+                  <span className="text-[10px] text-graphite opacity-60">/ {((waterTarget * 250) / 1000).toFixed(1)}L</span>
+                </div>
+                <div className="text-[9px] text-azure font-bold mt-1">
+                  {Math.round((waterIntake / waterTarget) * 100)}% reach
+                </div>
               </div>
             </div>
             <div className="flex space-x-2">
-              <button onClick={() => updateWater(-1)} className="w-7 h-7 rounded-full border border-silver-mist flex items-center justify-center text-graphite">-</button>
-              <button onClick={() => updateWater(1)} className="w-7 h-7 rounded-full bg-ink text-snow flex items-center justify-center shadow-sm"><Plus className="w-4 h-4" /></button>
+              <button onClick={() => updateWater(-1)} className="w-8 h-8 rounded-full border border-silver-mist flex items-center justify-center text-graphite hover:bg-fog transition-colors">-</button>
+              <button onClick={() => updateWater(1)} className="w-8 h-8 rounded-full bg-ink text-snow flex items-center justify-center shadow-sm hover:scale-110 active:scale-95 transition-all"><Plus className="w-4 h-4" /></button>
             </div>
           </div>
 
@@ -160,11 +190,11 @@ export default function HomeTab({
               </button>
             </div>
           </div>
-        </div>
+        </motion.div>
       </div>
 
       {/* Recent Meals Section */}
-      <div>
+      <motion.div variants={itemVariants}>
         <div className="flex items-center justify-between mb-6">
           <h3 className="font-display font-semibold text-body">Recent Meals</h3>
           <div className="flex items-center text-caption text-graphite bg-fog px-3 py-1 rounded-full font-medium">
@@ -179,8 +209,10 @@ export default function HomeTab({
             displayedMeals.map((meal, index) => (
               <motion.div
                 key={index}
-                initial={{ opacity: 0, y: 10 }}
-                animate={{ opacity: 1, y: 0 }}
+                initial={{ opacity: 0, scale: 0.95 }}
+                animate={{ opacity: 1, scale: 1 }}
+                whileHover={{ y: -5 }}
+                transition={{ duration: 0.3 }}
                 onClick={() => setSelectedLoggedMeal(meal)}
                 className="card-white !p-0 overflow-hidden border border-silver-mist/50 shadow-sm-soft group cursor-pointer hover:shadow-md transition-shadow"
               >
@@ -198,7 +230,9 @@ export default function HomeTab({
             ))
           )}
         </div>
-      </div>
-    </div>
+      </motion.div>
+    </motion.div>
   );
-}
+});
+
+export default HomeTab;

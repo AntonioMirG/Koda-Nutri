@@ -328,9 +328,11 @@ export default function Dashboard() {
 
   return (
     <div className="min-h-screen bg-snow font-sans text-ink flex flex-col md:flex-row overflow-x-hidden">
-      <Sidebar activeTab={activeTab} setActiveTab={setActiveTab} setIsScanning={setIsScanning} auth={auth} />
+      <div className="hidden md:block w-64 h-screen fixed top-0 left-0 bg-snow border-r border-silver-mist z-40">
+        <Sidebar activeTab={activeTab} setActiveTab={setActiveTab} setIsScanning={setIsScanning} auth={auth} />
+      </div>
 
-      <main className={`flex-1 transition-opacity duration-300 ${isScanning ? 'opacity-0 pointer-events-none' : 'opacity-100'}`}>
+      <main className={`flex-1 w-full md:ml-64 transition-opacity duration-300 ${isScanning ? 'opacity-0 pointer-events-none' : 'opacity-100'}`}>
         {activeTab === 'settings' ? (
           <Profile />
         ) : activeTab === 'analytics' ? (
