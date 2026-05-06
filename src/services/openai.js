@@ -6,7 +6,7 @@ const openai = new OpenAI({
 });
 
 /**
- * Analiza la imagen de comida directamente desde el navegador usando OpenAI.
+ * Analiza la imagen de comida y muestra el costo en tokens.
  */
 export const analyzeFoodImage = async (imageFile) => {
   try {
@@ -21,6 +21,10 @@ export const analyzeFoodImage = async (imageFile) => {
       model: "gpt-4o-mini",
       messages: [
         {
+          role: "system",
+          content: "Eres un experto en nutrición y estimación visual de porciones. Tu tarea es identificar los alimentos y estimar sus macros. Reglas: 1. Analiza raciones comparando con platos/cubiertos. 2. Suma ingredientes. 3. Considera grasas ocultas. 4. Responde estrictamente en JSON."
+        },
+        {
           role: "user",
           content: [
             {
@@ -31,14 +35,21 @@ export const analyzeFoodImage = async (imageFile) => {
               type: "image_url",
               image_url: {
                 url: base64,
+                detail: "low"
               },
             },
           ],
         },
       ],
       response_format: { type: "json_object" },
-      max_tokens: 300,
+      max_tokens: 500,
     });
+
+    // --- AUDITORÍA DE TOKENS ---
+    console.log("📊 COSTO DE ANÁLISIS DE IMAGEN:");
+    console.log(`- Entrada (Prompt + Imagen): ${response.usage.prompt_tokens}`);
+    console.log(`- Salida (Respuesta JSON): ${response.usage.completion_tokens}`);
+    console.log(`- Total: ${response.usage.total_tokens}`);
 
     const jsonString = response.choices[0].message.content;
     return JSON.parse(jsonString);
@@ -50,14 +61,14 @@ export const analyzeFoodImage = async (imageFile) => {
       protein: 25,
       carbs: 60,
       fat: 18,
-      review: "Hubo un error al conectar con OpenAI directamente desde el navegador.",
+      review: "Error al conectar con OpenAI.",
       healthScore: 7
     };
   }
 };
 
 /**
- * Calcula los macros del Onboarding directamente desde el navegador.
+ * Calcula los macros del Onboarding y muestra el costo en tokens.
  */
 export const calculateOnboardingMacros = async (profileData) => {
   try {
@@ -69,6 +80,10 @@ export const calculateOnboardingMacros = async (profileData) => {
       response_format: { type: "json_object" },
       max_tokens: 150,
     });
+
+    // --- AUDITORÍA DE TOKENS ---
+    console.log("📊 COSTO DE CÁLCULO ONBOARDING:");
+    console.log(`- Total tokens: ${response.usage.total_tokens}`);
 
     const jsonString = response.choices[0].message.content;
     return JSON.parse(jsonString);
