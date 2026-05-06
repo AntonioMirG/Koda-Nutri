@@ -312,8 +312,9 @@ export default function Dashboard() {
 
   const caloriesLeft = Math.max(0, targets.targetCalories - consumedMacros.calories);
   const calPercent = Math.min((consumedMacros.calories / targets.targetCalories) * 100, 100) || 0;
-  const circumference = 2 * Math.PI * 34;
+  const circumference = 2 * Math.PI * 70;
   const dashOffset = circumference - (calPercent / 100) * circumference;
+  const isOverGoal = consumedMacros.calories > targets.targetCalories;
 
   const protPercent = Math.min((consumedMacros.protein / targets.targetProtein) * 100, 100) || 0;
   const carbPercent = Math.min((consumedMacros.carbs / targets.targetCarbs) * 100, 100) || 0;
@@ -728,13 +729,21 @@ export default function Dashboard() {
                 <h3 className="text-[11px] font-bold text-graphite uppercase tracking-widest mb-6">Daily Calories</h3>
                 <div className="relative w-40 h-40 flex items-center justify-center">
                   <svg className="w-full h-full transform -rotate-90">
+                    <defs>
+                      <linearGradient id="calGradient" x1="0%" y1="0%" x2="100%" y2="0%">
+                        <stop offset="0%" stopColor="#0071e3" />
+                        <stop offset="100%" stopColor="#2bd9ff" />
+                      </linearGradient>
+                    </defs>
                     <circle cx="80" cy="80" r="70" stroke="#f2f2f7" strokeWidth="8" fill="transparent" />
                     <motion.circle
                       initial={{ strokeDashoffset: circumference }}
                       animate={{ strokeDashoffset: dashOffset }}
                       transition={{ duration: 1.5, ease: "easeOut" }}
                       cx="80" cy="80" r="70"
-                      stroke="#1c1c1e" strokeWidth="8" fill="transparent"
+                      stroke={isOverGoal ? "#ff3b30" : "url(#calGradient)"}
+                      strokeWidth="10"
+                      fill="transparent"
                       strokeDasharray={circumference}
                       strokeLinecap="round"
                     />
