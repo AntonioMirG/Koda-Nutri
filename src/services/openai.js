@@ -54,7 +54,7 @@ export const calculateOnboardingMacros = async (profileData) => {
     if (!response.ok) {
       throw new Error(`HTTP error! status: ${response.status}`);
     }
-
+    ºº
     const data = await response.json();
     return data;
   } catch (error) {
