@@ -40,14 +40,6 @@ export default function Landing({ onAuthSuccess }) {
 
   return (
     <div className="min-h-screen bg-fog text-ink font-sans pb-32">
-      {/* App Global Navigation */}
-      <nav className="bg-fog/80 backdrop-blur-md h-[44px] flex items-center px-6 max-w-[1024px] mx-auto z-50 fixed top-0 left-0 right-0 justify-between">
-        <div className="flex items-center space-x-2 text-[14px] font-semibold text-ink">
-          <Apple className="w-4 h-4" />
-          <span>Koda</span>
-        </div>
-      </nav>
-
       <main className="pt-[100px]">
         {/* Hero Section */}
         <section className="text-center px-6 mb-16">

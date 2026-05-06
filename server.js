@@ -118,3 +118,5 @@ app.post('/api/calcular-macros', async (req, res) => {
 app.listen(port, () => {
   console.log(`Backend listening at http://localhost:${port}`);
 });
+
+export { app };

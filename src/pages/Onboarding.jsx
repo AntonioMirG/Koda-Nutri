@@ -20,7 +20,7 @@ export default function Onboarding({ onComplete }) {
   const handleNext = () => {
     if (step < 3) setStep(prev => prev + 1);
   };
-  
+
   const handleBack = () => {
     if (step > 1) setStep(prev => prev - 1);
   };
@@ -31,7 +31,7 @@ export default function Onboarding({ onComplete }) {
 
   const handleSubmit = async () => {
     setLoading(true);
-    
+
     try {
       // Fetch OpenAI API to calculate optimal macros based on formData
       const calculatedMacros = await calculateOnboardingMacros(formData);
@@ -61,13 +61,13 @@ export default function Onboarding({ onComplete }) {
 
   return (
     <div className="min-h-screen bg-fog text-ink font-sans flex flex-col justify-center px-6 pb-24 relative overflow-hidden">
-      
+
       <div className="max-w-md mx-auto w-full relative z-10">
         <div className="mb-8">
           <div className="flex space-x-2 mb-6">
-             <div className={`h-1.5 flex-1 rounded-full ${step >= 1 ? 'bg-ink' : 'bg-silver-mist'}`}></div>
-             <div className={`h-1.5 flex-1 rounded-full ${step >= 2 ? 'bg-ink' : 'bg-silver-mist'}`}></div>
-             <div className={`h-1.5 flex-1 rounded-full ${step >= 3 ? 'bg-ink' : 'bg-silver-mist'}`}></div>
+            <div className={`h-1.5 flex-1 rounded-full ${step >= 1 ? 'bg-ink' : 'bg-silver-mist'}`}></div>
+            <div className={`h-1.5 flex-1 rounded-full ${step >= 2 ? 'bg-ink' : 'bg-silver-mist'}`}></div>
+            <div className={`h-1.5 flex-1 rounded-full ${step >= 3 ? 'bg-ink' : 'bg-silver-mist'}`}></div>
           </div>
           <h1 className="font-display font-semibold text-heading tracking-tight leading-tight">
             {step === 1 && "Tell us about yourself."}
@@ -146,12 +146,12 @@ export default function Onboarding({ onComplete }) {
                     </button>
                   ))}
                 </div>
-                
+
                 {loading && (
-                   <div className="absolute inset-0 bg-snow/80 backdrop-blur-sm flex flex-col items-center justify-center z-10 rounded-card">
-                     <Sparkles className="w-8 h-8 text-ink animate-pulse mb-3" />
-                     <span className="text-body-sm font-semibold">AI is calculating your macros...</span>
-                   </div>
+                  <div className="absolute inset-0 bg-snow/80 backdrop-blur-sm flex flex-col items-center justify-center z-10 rounded-card">
+                    <Sparkles className="w-8 h-8 text-ink animate-pulse mb-3" />
+                    <span className="text-body-sm font-semibold">AI is calculating your macros...</span>
+                  </div>
                 )}
               </motion.div>
             )}
