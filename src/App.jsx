@@ -44,14 +44,14 @@ function App() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-[#0a0a0a] flex flex-col items-center justify-center">
+      <div className="min-h-screen bg-[#FAFAFA] flex flex-col items-center justify-center">
         <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-brand to-azure flex items-center justify-center mb-4 animate-pulse shadow-glow-brand">
           <svg className="w-6 h-6 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 3v4M3 5h4M6 17v4m-2-2h4m5-16l2.286 6.857L21 12l-5.714 2.143L13 21l-2.286-6.857L5 12l5.714-2.143L13 3z" />
           </svg>
         </div>
-        <div className="text-white/80 font-display text-body font-bold tracking-tight">Koda</div>
-        <div className="text-white/30 text-caption mt-1">Loading...</div>
+        <div className="text-ink font-display text-body font-bold tracking-tight">Koda</div>
+        <div className="text-graphite text-caption mt-1">Loading...</div>
       </div>
     );
   }

@@ -369,6 +369,7 @@ export default function Dashboard() {
             circumference={circumference}
             dashOffset={dashOffset}
             consumedMacros={consumedMacros}
+            targets={targets}
             protPercent={protPercent}
             carbPercent={carbPercent}
             fatPercent={fatPercent}
