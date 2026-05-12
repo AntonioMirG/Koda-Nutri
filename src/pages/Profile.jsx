@@ -1,7 +1,7 @@
-import React, { useState, useEffect } from 'react';
-import { User, Target, Activity, Calendar, Save, LogOut } from 'lucide-react';
+import React, { useState, useEffect, useMemo } from 'react';
+import { User, Target, Calendar, Save, LogOut, ChevronRight, Sparkles, Check } from 'lucide-react';
 import { auth, db } from '../services/firebase';
-import { doc, getDoc, updateDoc, collection, addDoc } from 'firebase/firestore';
+import { doc, getDoc, updateDoc, collection, addDoc, query, where, getDocs, orderBy } from 'firebase/firestore';
 import { signOut } from 'firebase/auth';
 
 export default function Profile() {
@@ -9,6 +9,7 @@ export default function Profile() {
   const [isEditing, setIsEditing] = useState(false);
   const [formData, setFormData] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [weekMeals, setWeekMeals] = useState([]);
 
   useEffect(() => {
     const fetchProfile = async () => {
@@ -19,6 +20,23 @@ export default function Profile() {
           const data = docSnap.data();
           setProfileData(data);
           setFormData(data.profile);
+        }
+
+        // Fetch meals for the current week
+        try {
+          const now = new Date();
+          const dayOfWeek = now.getDay(); // 0=Sun, 1=Mon...
+          const mondayOffset = dayOfWeek === 0 ? -6 : 1 - dayOfWeek;
+          const monday = new Date(now);
+          monday.setDate(now.getDate() + mondayOffset);
+          monday.setHours(0, 0, 0, 0);
+
+          const mealsRef = collection(db, 'users', auth.currentUser.uid, 'meals');
+          const qMeals = query(mealsRef, where('timestamp', '>=', monday.toISOString()), orderBy('timestamp', 'desc'));
+          const mealsSnap = await getDocs(qMeals);
+          setWeekMeals(mealsSnap.docs.map(d => ({ id: d.id, ...d.data() })));
+        } catch (err) {
+          console.error('Error fetching week meals:', err);
         }
       }
       setLoading(false);
@@ -55,146 +73,198 @@ export default function Profile() {
   };
 
   if (loading && !profileData) {
-    return <div className="p-6 text-center text-graphite">Loading profile...</div>;
+    return (
+      <div className="p-6 text-center text-graphite">
+        <div className="w-8 h-8 rounded-xl bg-brand/10 flex items-center justify-center mx-auto mb-3 animate-pulse">
+          <Sparkles className="w-4 h-4 text-brand" />
+        </div>
+        Loading profile...
+      </div>
+    );
   }
 
   return (
-    <div className="pb-24">
-      <header className="pt-12 px-6 pb-6 max-w-7xl mx-auto">
-        <h1 className="font-display font-semibold text-heading-sm tracking-tight mb-2">Profile</h1>
+    <div className="pt-8 md:pt-10 px-4 md:px-6 pb-32 max-w-2xl mx-auto">
+      <header className="mb-8">
+        <h1 className="font-display font-bold text-heading tracking-tight mb-1">Profile</h1>
         <p className="text-body-sm text-graphite">Manage your goals and personal data.</p>
       </header>
 
-      <div className="px-6 max-w-7xl mx-auto space-y-6">
-        
-         {/* User Info Card */}
-         <div className="card-white shadow-sm-soft border border-silver-mist">
-            <div className="flex items-center mb-6">
-              <div className="w-12 h-12 bg-fog rounded-full flex items-center justify-center border border-silver-mist mr-3">
-                <User className="w-6 h-6 text-ink" />
-              </div>
-              <div>
-                <div className="font-semibold text-body-sm truncate max-w-[180px]">
-                  {auth.currentUser?.displayName || auth.currentUser?.email?.split('@')[0]}
-                </div>
-                <div className="text-caption text-graphite">Koda Pro Member</div>
-              </div>
+      <div className="space-y-4">
+        {/* User Info Card */}
+        <div className="card-white shadow-card p-5">
+          <div className="flex items-center mb-6">
+            <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-brand to-azure flex items-center justify-center mr-3 shadow-glow-brand">
+              <User className="w-6 h-6 text-snow" />
             </div>
- 
-            {formData && (
-              <div className="grid grid-cols-2 gap-4 mb-6">
-                <div>
-                  <label className="block text-[10px] text-graphite uppercase font-semibold mb-1">Age</label>
-                  {isEditing ? (
-                    <input type="number" value={formData.age} onChange={e => setFormData({...formData, age: e.target.value})} className="w-full bg-fog border border-silver-mist rounded p-2 text-body-sm" />
-                  ) : (
-                    <div className="font-medium text-body-sm">{formData.age} yrs</div>
-                  )}
-                </div>
-                <div>
-                  <label className="block text-[10px] text-graphite uppercase font-semibold mb-1">Gender</label>
-                  {isEditing ? (
-                    <select value={formData.gender} onChange={e => setFormData({...formData, gender: e.target.value})} className="w-full bg-fog border border-silver-mist rounded p-2 text-body-sm">
-                      <option value="Male">Male</option>
-                      <option value="Female">Female</option>
-                    </select>
-                  ) : (
-                    <div className="font-medium text-body-sm">{formData.gender}</div>
-                  )}
-                </div>
-                <div>
-                  <label className="block text-[10px] text-graphite uppercase font-semibold mb-1">Weight (kg)</label>
-                  {isEditing ? (
-                    <input type="number" value={formData.weight} onChange={e => setFormData({...formData, weight: e.target.value})} className="w-full bg-fog border border-silver-mist rounded p-2 text-body-sm" />
-                  ) : (
-                    <div className="font-medium text-body-sm">{formData.weight} kg</div>
-                  )}
-                </div>
-                <div>
-                  <label className="block text-[10px] text-graphite uppercase font-semibold mb-1">Height (cm)</label>
-                  {isEditing ? (
-                    <input type="number" value={formData.height} onChange={e => setFormData({...formData, height: e.target.value})} className="w-full bg-fog border border-silver-mist rounded p-2 text-body-sm" />
-                  ) : (
-                    <div className="font-medium text-body-sm">{formData.height} cm</div>
-                  )}
-                </div>
+            <div>
+              <div className="font-bold text-body-sm truncate max-w-[200px]">
+                {auth.currentUser?.displayName || auth.currentUser?.email?.split('@')[0]}
               </div>
-            )}
+              <div className="text-caption text-brand font-semibold">Koda Pro Member</div>
+            </div>
+          </div>
 
-            {!isEditing ? (
-              <button 
-                onClick={() => setIsEditing(true)} 
-                className="w-full bg-fog border border-silver-mist py-3 rounded-xl text-ink text-body-sm font-semibold hover:bg-silver-mist transition-colors"
-              >
-                Edit Personal Data
-              </button>
-            ) : (
-              <button 
-                onClick={handleSave} 
-                disabled={loading} 
-                className="w-full bg-ink text-snow py-3 rounded-xl text-body-sm font-semibold hover:opacity-90 flex items-center justify-center shadow-md active:scale-95 transition-transform"
-              >
-                <Save className="w-4 h-4 mr-2"/> Save Changes
-              </button>
-            )}
-         </div>
+          {formData && (
+            <div className="grid grid-cols-2 gap-3 mb-5">
+              {[
+                { label: 'Age', key: 'age', suffix: 'yrs', type: 'number' },
+                { label: 'Gender', key: 'gender', type: 'select', options: ['Male', 'Female'] },
+                { label: 'Weight', key: 'weight', suffix: 'kg', type: 'number' },
+                { label: 'Height', key: 'height', suffix: 'cm', type: 'number' },
+              ].map((field) => (
+                <div key={field.key}>
+                  <label className="block text-[10px] text-graphite uppercase font-bold tracking-wider mb-1.5">{field.label}</label>
+                  {isEditing ? (
+                    field.type === 'select' ? (
+                      <select
+                        value={formData[field.key]}
+                        onChange={e => setFormData({...formData, [field.key]: e.target.value})}
+                        className="w-full bg-fog border-2 border-silver-mist/60 rounded-xl p-2.5 text-body-sm font-medium focus:border-brand transition-colors"
+                      >
+                        {field.options.map(opt => <option key={opt} value={opt}>{opt}</option>)}
+                      </select>
+                    ) : (
+                      <input
+                        type="number"
+                        value={formData[field.key]}
+                        onChange={e => setFormData({...formData, [field.key]: e.target.value})}
+                        className="w-full bg-fog border-2 border-silver-mist/60 rounded-xl p-2.5 text-body-sm font-medium focus:border-brand transition-colors"
+                      />
+                    )
+                  ) : (
+                    <div className="font-bold text-body-sm">{formData[field.key]} {field.suffix || ''}</div>
+                  )}
+                </div>
+              ))}
+            </div>
+          )}
+
+          {!isEditing ? (
+            <button 
+              onClick={() => setIsEditing(true)} 
+              className="w-full bg-fog border-2 border-silver-mist/60 py-3 rounded-xl text-ink text-body-sm font-bold hover:border-graphite transition-all flex items-center justify-center"
+            >
+              Edit Personal Data
+              <ChevronRight className="w-4 h-4 ml-1.5" />
+            </button>
+          ) : (
+            <button 
+              onClick={handleSave} 
+              disabled={loading} 
+              className="w-full bg-gradient-to-r from-brand to-azure text-snow py-3 rounded-xl text-body-sm font-bold shadow-glow-brand hover:shadow-glow-blue flex items-center justify-center active:scale-[0.98] transition-all"
+            >
+              <Save className="w-4 h-4 mr-2"/> Save Changes
+            </button>
+          )}
+        </div>
 
         {/* Goals & Targets */}
         {profileData?.targets && (
-          <div className="card-white shadow-sm-soft border border-silver-mist">
-             <div className="flex items-center mb-4">
-               <Target className="w-5 h-5 mr-2 text-ink" />
-               <h3 className="font-display font-semibold text-body">Daily Targets (AI Calculated)</h3>
-             </div>
-             <p className="text-caption text-graphite mb-6">Based on your goal to <span className="font-semibold text-ink">{profileData.profile.goal}</span>.</p>
-             
-             <div className="grid grid-cols-2 gap-y-4 gap-x-8">
-                <div>
-                   <div className="text-[10px] text-graphite font-semibold">CALORIES</div>
-                   <div className="font-bold text-heading-sm text-ink">{profileData.targets.targetCalories}</div>
+          <div className="card-white shadow-card p-5">
+            <div className="flex items-center mb-4">
+              <div className="w-9 h-9 rounded-xl bg-brand/10 flex items-center justify-center mr-3">
+                <Target className="w-5 h-5 text-brand" />
+              </div>
+              <div>
+                <h3 className="font-display font-bold text-body-sm">Daily Targets</h3>
+                <p className="text-[10px] text-graphite">AI Calculated</p>
+              </div>
+            </div>
+            <p className="text-caption text-graphite mb-5">Based on your goal to <span className="font-bold text-ink">{profileData.profile.goal}</span>.</p>
+            
+            <div className="grid grid-cols-2 gap-3">
+              {[
+                { label: 'Calories', value: profileData.targets.targetCalories, unit: 'kcal', color: 'text-ink', bg: 'bg-fog' },
+                { label: 'Protein', value: profileData.targets.targetProtein, unit: 'g', color: 'text-coral', bg: 'bg-coral/10' },
+                { label: 'Carbs', value: profileData.targets.targetCarbs, unit: 'g', color: 'text-amber', bg: 'bg-amber/10' },
+                { label: 'Fats', value: profileData.targets.targetFats, unit: 'g', color: 'text-azure', bg: 'bg-azure/10' },
+              ].map((t, i) => (
+                <div key={i} className={`${t.bg} rounded-xl p-3.5`}>
+                  <div className={`text-heading-sm font-bold ${t.color}`}>{t.value}<span className="text-caption text-graphite ml-0.5 font-medium">{t.unit}</span></div>
+                  <div className="text-[10px] text-graphite font-bold uppercase tracking-wider mt-0.5">{t.label}</div>
                 </div>
-                <div>
-                   <div className="text-[10px] text-graphite font-semibold">PROTEIN</div>
-                   <div className="font-bold text-heading-sm text-[#ff3b30]">{profileData.targets.targetProtein}g</div>
-                </div>
-                <div>
-                   <div className="text-[10px] text-graphite font-semibold">CARBS</div>
-                   <div className="font-bold text-heading-sm text-[#ff9500]">{profileData.targets.targetCarbs}g</div>
-                </div>
-                <div>
-                   <div className="text-[10px] text-graphite font-semibold">FATS</div>
-                   <div className="font-bold text-heading-sm text-[#0071e3]">{profileData.targets.targetFats}g</div>
-                </div>
-             </div>
+              ))}
+            </div>
           </div>
         )}
 
-        {/* History / Calendar Mock */}
-        <div className="card-fog border border-silver-mist bg-snow">
-           <div className="flex items-center justify-between mb-4">
-             <div className="flex items-center">
-               <Calendar className="w-5 h-5 mr-2 text-ink" />
-               <h3 className="font-display font-semibold text-body">Consistency</h3>
-             </div>
-             <span className="text-caption text-azure font-medium cursor-pointer">View all</span>
-           </div>
-           
-           <div className="flex justify-between mt-4">
-             {['M', 'T', 'W', 'T', 'F', 'S', 'S'].map((day, i) => (
-               <div key={i} className="flex flex-col items-center">
-                 <div className="text-[10px] text-graphite font-semibold mb-2">{day}</div>
-                 <div className={`w-8 h-8 rounded-full flex items-center justify-center border ${i < 4 ? 'bg-[#34c759]/20 border-[#34c759]' : 'border-silver-mist bg-fog'}`}>
-                   {i < 4 && <div className="w-2 h-2 rounded-full bg-[#34c759]"></div>}
-                 </div>
-               </div>
-             ))}
-           </div>
-        </div>
+        {/* Consistency — real data */}
+        {(() => {
+          const dayLabels = ['M', 'T', 'W', 'T', 'F', 'S', 'S'];
+          const now = new Date();
+          const dayOfWeek = now.getDay(); // 0=Sun
+          const mondayOffset = dayOfWeek === 0 ? -6 : 1 - dayOfWeek;
 
-        <button onClick={handleLogout} className="w-full text-center py-4 text-[#ff3b30] font-medium text-body-sm mt-4 hover:bg-[#ff3b30]/10 rounded-small transition-colors">
+          // Build array of dates for Mon–Sun of current week
+          const weekDates = Array.from({ length: 7 }, (_, i) => {
+            const d = new Date(now);
+            d.setDate(now.getDate() + mondayOffset + i);
+            return d.toISOString().split('T')[0]; // 'YYYY-MM-DD'
+          });
+
+          // Which days had at least one meal?
+          const loggedDays = new Set(
+            weekMeals.map(m => m.timestamp?.split('T')[0])
+          );
+
+          const todayStr = now.toISOString().split('T')[0];
+          const activeDays = weekDates.filter(d => loggedDays.has(d)).length;
+
+          return (
+            <div className="card-white shadow-card p-5">
+              <div className="flex items-center justify-between mb-4">
+                <div className="flex items-center">
+                  <div className="w-9 h-9 rounded-xl bg-mint/10 flex items-center justify-center mr-3">
+                    <Calendar className="w-5 h-5 text-mint" />
+                  </div>
+                  <div>
+                    <h3 className="font-display font-bold text-body-sm">This Week</h3>
+                    <p className="text-[10px] text-graphite">{activeDays}/7 days logged</p>
+                  </div>
+                </div>
+                {activeDays >= 5 && (
+                  <span className="text-[10px] bg-mint/10 text-mint px-2.5 py-1 rounded-lg font-bold">🔥 Great week!</span>
+                )}
+              </div>
+              
+              <div className="flex justify-between mt-3">
+                {dayLabels.map((label, i) => {
+                  const dateStr = weekDates[i];
+                  const hasLog = loggedDays.has(dateStr);
+                  const isToday = dateStr === todayStr;
+                  const isFuture = dateStr > todayStr;
+
+                  return (
+                    <div key={i} className="flex flex-col items-center">
+                      <div className={`text-[10px] font-bold mb-2 ${isToday ? 'text-brand' : 'text-graphite'}`}>{label}</div>
+                      <div className={`w-8 h-8 rounded-xl flex items-center justify-center transition-all ${
+                        hasLog
+                          ? 'bg-mint/15 border border-mint/30'
+                          : isFuture
+                            ? 'border border-silver-mist/40 bg-fog/50'
+                            : isToday
+                              ? 'border-2 border-brand/30 bg-brand/5'
+                              : 'border border-silver-mist bg-fog'
+                      }`}>
+                        {hasLog ? <Check className="w-3.5 h-3.5 text-mint" /> : isToday && <div className="w-1.5 h-1.5 rounded-full bg-brand" />}
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+          );
+        })()}
+
+        {/* Sign Out */}
+        <button 
+          onClick={handleLogout} 
+          className="w-full flex items-center justify-center py-4 text-coral font-bold text-body-sm rounded-xl hover:bg-coral/5 transition-colors"
+        >
+          <LogOut className="w-4 h-4 mr-2" />
           Sign Out from Koda
         </button>
-
       </div>
     </div>
   );

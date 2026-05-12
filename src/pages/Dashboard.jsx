@@ -101,7 +101,7 @@ export default function Dashboard() {
         const d = new Date();
         if (selectedDay === 'yesterday') d.setDate(d.getDate() - 1);
         const dateStr = d.toISOString().split('T')[0];
-        
+
         const waterRef = doc(db, 'users', auth.currentUser.uid, 'water', dateStr);
         const waterSnap = await getDoc(waterRef);
         if (waterSnap.exists()) {

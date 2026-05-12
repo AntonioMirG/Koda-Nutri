@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { auth, db } from '../services/firebase';
 import { doc, setDoc, collection } from 'firebase/firestore';
-import { Sparkles, ArrowRight, ArrowLeft } from 'lucide-react';
+import { Sparkles, ArrowRight, ArrowLeft, Target, Dumbbell, UserCircle } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { calculateOnboardingMacros } from '../services/openai';
 
@@ -59,55 +59,121 @@ export default function Onboarding({ onComplete }) {
     }
   };
 
+  const stepIcons = [
+    <UserCircle className="w-5 h-5" />,
+    <Target className="w-5 h-5" />,
+    <Dumbbell className="w-5 h-5" />,
+  ];
+
+  const stepTitles = [
+    "Tell us about yourself.",
+    "What's your goal?",
+    "Your lifestyle.",
+  ];
+
+  const stepSubtitles = [
+    "We need this to calculate your base metabolic rate.",
+    "Our AI will adjust your macros to hit this target.",
+    "This helps us account for your daily activity.",
+  ];
+
   return (
-    <div className="min-h-screen bg-fog text-ink font-sans flex flex-col justify-center px-6 pb-24 relative overflow-hidden">
+    <div className="min-h-screen bg-fog text-ink font-sans flex flex-col justify-center px-5 pb-24 relative overflow-hidden">
+      {/* Subtle background accent */}
+      <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[600px] h-[300px] bg-gradient-to-b from-brand/5 to-transparent rounded-full blur-[80px] pointer-events-none" />
 
       <div className="max-w-md mx-auto w-full relative z-10">
+        {/* Step indicator */}
         <div className="mb-8">
-          <div className="flex space-x-2 mb-6">
-            <div className={`h-1.5 flex-1 rounded-full ${step >= 1 ? 'bg-ink' : 'bg-silver-mist'}`}></div>
-            <div className={`h-1.5 flex-1 rounded-full ${step >= 2 ? 'bg-ink' : 'bg-silver-mist'}`}></div>
-            <div className={`h-1.5 flex-1 rounded-full ${step >= 3 ? 'bg-ink' : 'bg-silver-mist'}`}></div>
+          <div className="flex items-center justify-between mb-8">
+            {[1, 2, 3].map(s => (
+              <div key={s} className="flex items-center flex-1">
+                <div className={`w-10 h-10 rounded-xl flex items-center justify-center transition-all duration-300 ${
+                  step >= s 
+                    ? 'bg-gradient-to-br from-brand to-azure text-snow shadow-glow-brand' 
+                    : 'bg-silver-mist/50 text-graphite'
+                }`}>
+                  {stepIcons[s - 1]}
+                </div>
+                {s < 3 && (
+                  <div className="flex-1 mx-2">
+                    <div className={`h-0.5 rounded-full transition-all duration-500 ${
+                      step > s ? 'bg-brand' : 'bg-silver-mist'
+                    }`} />
+                  </div>
+                )}
+              </div>
+            ))}
           </div>
-          <h1 className="font-display font-semibold text-heading tracking-tight leading-tight">
-            {step === 1 && "Tell us about yourself."}
-            {step === 2 && "What's your goal?"}
-            {step === 3 && "Your lifestyle."}
-          </h1>
-          <p className="text-body text-graphite mt-2">
-            {step === 1 && "We need this to calculate your base metabolic rate."}
-            {step === 2 && "Our AI will adjust your macros to hit this target."}
-            {step === 3 && "This helps us account for your daily activity."}
-          </p>
+
+          <motion.div
+            key={step}
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.3 }}
+          >
+            <h1 className="font-display font-bold text-heading tracking-tight leading-tight">
+              {stepTitles[step - 1]}
+            </h1>
+            <p className="text-body text-graphite mt-2">
+              {stepSubtitles[step - 1]}
+            </p>
+          </motion.div>
         </div>
 
-        <div className="card-white shadow-lg-soft relative overflow-hidden mb-8 border border-silver-mist/50">
+        <div className="card-white shadow-card relative overflow-hidden mb-6">
           <AnimatePresence mode="wait">
             {step === 1 && (
-              <motion.div key="step1" initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -20 }}>
+              <motion.div key="step1" initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -20 }} transition={{ duration: 0.25 }}>
                 <div className="space-y-4">
                   <div>
-                    <label className="block text-caption font-medium text-graphite mb-2">Gender</label>
-                    <div className="flex space-x-3">
+                    <label className="block text-caption font-semibold text-graphite mb-2">Gender</label>
+                    <div className="grid grid-cols-2 gap-3">
                       {['Male', 'Female'].map(g => (
-                        <button key={g} onClick={() => updateForm('gender', g)} className={`flex-1 py-3 rounded-small border ${formData.gender === g ? 'bg-ink text-snow border-ink' : 'bg-fog text-ink border-silver-mist'} font-medium text-body-sm transition-colors`}>
+                        <button
+                          key={g}
+                          onClick={() => updateForm('gender', g)}
+                          className={`py-3.5 rounded-xl border-2 font-semibold text-body-sm transition-all duration-200 ${
+                            formData.gender === g
+                              ? 'bg-brand text-snow border-brand shadow-glow-brand'
+                              : 'bg-fog text-ink border-silver-mist/60 hover:border-graphite'
+                          }`}
+                        >
                           {g}
                         </button>
                       ))}
                     </div>
                   </div>
                   <div>
-                    <label className="block text-caption font-medium text-graphite mb-2">Age</label>
-                    <input type="number" placeholder="25" value={formData.age} onChange={e => updateForm('age', e.target.value)} className="w-full bg-fog border border-silver-mist rounded-small px-4 py-3 text-body-sm focus:outline-none focus:border-ink" />
+                    <label className="block text-caption font-semibold text-graphite mb-2">Age</label>
+                    <input
+                      type="number"
+                      placeholder="25"
+                      value={formData.age}
+                      onChange={e => updateForm('age', e.target.value)}
+                      className="w-full bg-fog border-2 border-silver-mist/60 rounded-xl px-4 py-3 text-body-sm focus:border-brand transition-colors"
+                    />
                   </div>
-                  <div className="flex space-x-4">
-                    <div className="flex-1">
-                      <label className="block text-caption font-medium text-graphite mb-2">Weight (kg)</label>
-                      <input type="number" placeholder="70" value={formData.weight} onChange={e => updateForm('weight', e.target.value)} className="w-full bg-fog border border-silver-mist rounded-small px-4 py-3 text-body-sm focus:outline-none focus:border-ink" />
+                  <div className="grid grid-cols-2 gap-3">
+                    <div>
+                      <label className="block text-caption font-semibold text-graphite mb-2">Weight (kg)</label>
+                      <input
+                        type="number"
+                        placeholder="70"
+                        value={formData.weight}
+                        onChange={e => updateForm('weight', e.target.value)}
+                        className="w-full bg-fog border-2 border-silver-mist/60 rounded-xl px-4 py-3 text-body-sm focus:border-brand transition-colors"
+                      />
                     </div>
-                    <div className="flex-1">
-                      <label className="block text-caption font-medium text-graphite mb-2">Height (cm)</label>
-                      <input type="number" placeholder="175" value={formData.height} onChange={e => updateForm('height', e.target.value)} className="w-full bg-fog border border-silver-mist rounded-small px-4 py-3 text-body-sm focus:outline-none focus:border-ink" />
+                    <div>
+                      <label className="block text-caption font-semibold text-graphite mb-2">Height (cm)</label>
+                      <input
+                        type="number"
+                        placeholder="175"
+                        value={formData.height}
+                        onChange={e => updateForm('height', e.target.value)}
+                        className="w-full bg-fog border-2 border-silver-mist/60 rounded-xl px-4 py-3 text-body-sm focus:border-brand transition-colors"
+                      />
                     </div>
                   </div>
                 </div>
@@ -115,16 +181,27 @@ export default function Onboarding({ onComplete }) {
             )}
 
             {step === 2 && (
-              <motion.div key="step2" initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -20 }}>
+              <motion.div key="step2" initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -20 }} transition={{ duration: 0.25 }}>
                 <div className="space-y-3">
                   {[
-                    { id: 'lose', label: 'Lose weight', desc: 'Caloric deficit for fat loss' },
-                    { id: 'maintain', label: 'Maintain weight', desc: 'Keep your current physique' },
-                    { id: 'gain', label: 'Gain muscle', desc: 'Caloric surplus for hypertrophy' }
+                    { id: 'lose', label: 'Lose weight', desc: 'Caloric deficit for fat loss', emoji: '🔥' },
+                    { id: 'maintain', label: 'Maintain weight', desc: 'Keep your current physique', emoji: '⚖️' },
+                    { id: 'gain', label: 'Gain muscle', desc: 'Caloric surplus for hypertrophy', emoji: '💪' }
                   ].map(goal => (
-                    <button key={goal.id} onClick={() => updateForm('goal', goal.id)} className={`w-full text-left p-4 rounded-small border ${formData.goal === goal.id ? 'bg-ink text-snow border-ink' : 'bg-fog text-ink border-silver-mist'} transition-colors`}>
-                      <div className="font-semibold text-body-sm">{goal.label}</div>
-                      <div className={`text-caption mt-1 ${formData.goal === goal.id ? 'text-snow/70' : 'text-graphite'}`}>{goal.desc}</div>
+                    <button
+                      key={goal.id}
+                      onClick={() => updateForm('goal', goal.id)}
+                      className={`w-full text-left p-4 rounded-xl border-2 transition-all duration-200 flex items-center ${
+                        formData.goal === goal.id
+                          ? 'bg-brand text-snow border-brand shadow-glow-brand'
+                          : 'bg-fog text-ink border-silver-mist/60 hover:border-graphite'
+                      }`}
+                    >
+                      <span className="text-[24px] mr-4">{goal.emoji}</span>
+                      <div>
+                        <div className="font-semibold text-body-sm">{goal.label}</div>
+                        <div className={`text-caption mt-0.5 ${formData.goal === goal.id ? 'text-snow/70' : 'text-graphite'}`}>{goal.desc}</div>
+                      </div>
                     </button>
                   ))}
                 </div>
@@ -132,45 +209,72 @@ export default function Onboarding({ onComplete }) {
             )}
 
             {step === 3 && (
-              <motion.div key="step3" initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -20 }}>
+              <motion.div key="step3" initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -20 }} transition={{ duration: 0.25 }}>
                 <div className="space-y-3">
                   {[
-                    { id: 'sedentary', label: 'Sedentary', desc: 'Little to no exercise' },
-                    { id: 'light', label: 'Lightly active', desc: '1-3 days per week' },
-                    { id: 'moderate', label: 'Moderately active', desc: '3-5 days per week' },
-                    { id: 'very', label: 'Very active', desc: '6-7 days per week' }
+                    { id: 'sedentary', label: 'Sedentary', desc: 'Little to no exercise', emoji: '🪑' },
+                    { id: 'light', label: 'Lightly active', desc: '1-3 days per week', emoji: '🚶' },
+                    { id: 'moderate', label: 'Moderately active', desc: '3-5 days per week', emoji: '🏃' },
+                    { id: 'very', label: 'Very active', desc: '6-7 days per week', emoji: '🏋️' }
                   ].map(life => (
-                    <button key={life.id} onClick={() => updateForm('lifestyle', life.id)} className={`w-full text-left p-4 rounded-small border ${formData.lifestyle === life.id ? 'bg-ink text-snow border-ink' : 'bg-fog text-ink border-silver-mist'} transition-colors`}>
-                      <div className="font-semibold text-body-sm">{life.label}</div>
-                      <div className={`text-caption mt-1 ${formData.lifestyle === life.id ? 'text-snow/70' : 'text-graphite'}`}>{life.desc}</div>
+                    <button
+                      key={life.id}
+                      onClick={() => updateForm('lifestyle', life.id)}
+                      className={`w-full text-left p-4 rounded-xl border-2 transition-all duration-200 flex items-center ${
+                        formData.lifestyle === life.id
+                          ? 'bg-brand text-snow border-brand shadow-glow-brand'
+                          : 'bg-fog text-ink border-silver-mist/60 hover:border-graphite'
+                      }`}
+                    >
+                      <span className="text-[24px] mr-4">{life.emoji}</span>
+                      <div>
+                        <div className="font-semibold text-body-sm">{life.label}</div>
+                        <div className={`text-caption mt-0.5 ${formData.lifestyle === life.id ? 'text-snow/70' : 'text-graphite'}`}>{life.desc}</div>
+                      </div>
                     </button>
                   ))}
                 </div>
 
                 {loading && (
-                  <div className="absolute inset-0 bg-snow/80 backdrop-blur-sm flex flex-col items-center justify-center z-10 rounded-card">
-                    <Sparkles className="w-8 h-8 text-ink animate-pulse mb-3" />
-                    <span className="text-body-sm font-semibold">AI is calculating your macros...</span>
-                  </div>
+                  <motion.div
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    className="absolute inset-0 bg-snow/90 backdrop-blur-sm flex flex-col items-center justify-center z-10 rounded-2xl"
+                  >
+                    <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-brand to-azure flex items-center justify-center animate-pulse mb-3">
+                      <Sparkles className="w-6 h-6 text-snow" />
+                    </div>
+                    <span className="text-body-sm font-bold text-ink">AI is calculating your macros...</span>
+                    <span className="text-caption text-graphite mt-1">This takes a moment</span>
+                  </motion.div>
                 )}
               </motion.div>
             )}
           </AnimatePresence>
         </div>
 
-        <div className="flex justify-between">
+        {/* Navigation buttons */}
+        <div className="flex justify-between gap-3">
           {step > 1 ? (
-            <button onClick={handleBack} className="btn-frosted !bg-fog text-ink px-6 flex items-center">
+            <button onClick={handleBack} className="bg-fog border-2 border-silver-mist/60 text-ink px-6 py-3 rounded-xl font-semibold text-body-sm flex items-center hover:border-graphite transition-colors">
               <ArrowLeft className="w-4 h-4 mr-2" /> Back
             </button>
           ) : <div></div>}
 
           {step < 3 ? (
-            <button onClick={handleNext} disabled={step === 1 && (!formData.gender || !formData.age || !formData.weight || !formData.height) || step === 2 && !formData.goal} className="btn-primary px-8 flex items-center disabled:opacity-50">
+            <button
+              onClick={handleNext}
+              disabled={step === 1 && (!formData.gender || !formData.age || !formData.weight || !formData.height) || step === 2 && !formData.goal}
+              className="bg-gradient-to-r from-brand to-azure text-snow px-8 py-3 rounded-xl font-bold text-body-sm flex items-center disabled:opacity-40 shadow-glow-brand hover:shadow-glow-blue transition-all duration-300"
+            >
               Next <ArrowRight className="w-4 h-4 ml-2" />
             </button>
           ) : (
-            <button onClick={handleSubmit} disabled={!formData.lifestyle || loading} className="btn-primary px-8 flex items-center disabled:opacity-50">
+            <button
+              onClick={handleSubmit}
+              disabled={!formData.lifestyle || loading}
+              className="bg-gradient-to-r from-brand to-azure text-snow px-8 py-3 rounded-xl font-bold text-body-sm flex items-center disabled:opacity-40 shadow-glow-brand hover:shadow-glow-blue transition-all duration-300"
+            >
               Calculate Plan <Sparkles className="w-4 h-4 ml-2" />
             </button>
           )}
