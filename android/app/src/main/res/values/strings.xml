@@ -1,0 +1,7 @@
+<?xml version='1.0' encoding='utf-8'?>
+<resources>
+    <string name="app_name">koda</string>
+    <string name="title_activity_main">koda</string>
+    <string name="package_name">org.nutriia.koda</string>
+    <string name="custom_url_scheme">org.nutriia.koda</string>
+</resources>

@@ -1,9 +1,10 @@
 import { motion, AnimatePresence } from 'framer-motion';
 import { X, Flame, Activity, Beef, Droplet, ImageIcon, Camera } from 'lucide-react';
 import { useLanguage } from '../../context/LanguageContext';
+import { Capacitor } from '@capacitor/core';
 
 export default function ScannerOverlay({ 
-  isScanning, closeScanner, selectedImage, isAnalyzing, analysisResult, handleImageUpload, confirmMeal, loading 
+  isScanning, closeScanner, selectedImage, isAnalyzing, analysisResult, handleImageUpload, handleNativeScan, confirmMeal, loading 
 }) {
   const { t } = useLanguage();
   return (
@@ -80,10 +81,21 @@ export default function ScannerOverlay({
 
                 {/* Camera shutter */}
                 <div className="relative cursor-pointer flex flex-col items-center">
-                  <input type="file" accept="image/*" capture="environment" onChange={handleImageUpload} className="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10" />
-                  <div className="w-[72px] h-[72px] rounded-full border-4 border-white/80 flex items-center justify-center hover:scale-105 active:scale-95 transition-transform">
-                    <div className="w-[56px] h-[56px] rounded-full bg-gradient-to-br from-brand to-azure" />
-                  </div>
+                  {Capacitor.isNativePlatform() ? (
+                    <div 
+                      onClick={handleNativeScan}
+                      className="w-[72px] h-[72px] rounded-full border-4 border-white/80 flex items-center justify-center hover:scale-105 active:scale-95 transition-transform"
+                    >
+                      <div className="w-[56px] h-[56px] rounded-full bg-gradient-to-br from-brand to-azure" />
+                    </div>
+                  ) : (
+                    <>
+                      <input type="file" accept="image/*" capture="environment" onChange={handleImageUpload} className="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10" />
+                      <div className="w-[72px] h-[72px] rounded-full border-4 border-white/80 flex items-center justify-center hover:scale-105 active:scale-95 transition-transform">
+                        <div className="w-[56px] h-[56px] rounded-full bg-gradient-to-br from-brand to-azure" />
+                      </div>
+                    </>
+                  )}
                 </div>
 
                 <div className="w-12" />

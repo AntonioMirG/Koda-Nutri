@@ -1,7 +1,8 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import { useLanguage } from '../context/LanguageContext';
 
-import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
+import { ref, uploadBytes, getDownloadURL, uploadString } from 'firebase/storage';
+import { useCamera, useAds } from '../hooks/native';
 import { auth, db, storage } from '../services/firebase';
 import { signOut } from 'firebase/auth';
 import { doc, getDoc, collection, addDoc, query, where, getDocs, orderBy, setDoc } from 'firebase/firestore';
@@ -44,6 +45,9 @@ export default function Dashboard() {
 
   const [searchQuery, setSearchQuery] = useState('');
   const [activeFilter, setActiveFilter] = useState('All');
+  const { takePicture } = useCamera();
+  const { showInterstitial } = useAds();
+  const [photoData, setPhotoData] = useState(null);
   const [recipes, setRecipes] = useState([]);
   const [recalcTrigger, setRecalcTrigger] = useState(0);
 
@@ -167,6 +171,55 @@ export default function Dashboard() {
     });
   };
 
+  const handleNativeScan = async () => {
+    try {
+      const today = new Date().toISOString().split('T')[0];
+      const todayMealsCount = allMeals.filter(m => m.timestamp.startsWith(today)).length;
+      if (todayMealsCount >= 5) {
+        alert("Daily limit reached (5 meals/day). Upgrading coming soon!");
+        return;
+      }
+
+      const photo = await takePicture();
+      setPhotoData(photo);
+      
+      await showInterstitial();
+      
+      setIsAnalyzing(true);
+      setAnalysisResult(null);
+      setSelectedImage(photo.webviewPath);
+
+      // Convert base64 to Blob for the analyzer service
+      const response = await fetch(`data:image/webp;base64,${photo.base64}`);
+      const blob = await response.blob();
+      const file = new File([blob], "capture.webp", { type: "image/webp" });
+      setCurrentFile(file);
+
+      const result = await analyzeFoodImage(file);
+      
+      let trafficColor = 'yellow';
+      const goal = userData?.profile?.goal || 'maintain';
+      if (goal === 'lose') {
+        trafficColor = result.healthScore >= 7 ? 'green' : result.healthScore >= 4 ? 'yellow' : 'red';
+      } else if (goal === 'gain') {
+        trafficColor = result.protein >= 20 ? 'green' : 'yellow';
+      }
+
+      const mealWithMetadata = {
+        ...result,
+        trafficColor,
+        image: photo.webviewPath,
+        timestamp: new Date().toISOString(),
+        time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+      };
+      setAnalysisResult(mealWithMetadata);
+    } catch (error) {
+      console.error("Native scan failed", error);
+    } finally {
+      setIsAnalyzing(false);
+    }
+  };
+
   const handleImageUpload = async (e) => {
     const originalFile = e.target.files[0];
     if (originalFile) {
@@ -247,11 +300,15 @@ export default function Dashboard() {
           return;
         }
 
-        const fileExtension = currentFile.name.split('.').pop();
-        const fileName = `${Date.now()}.${fileExtension}`;
+        const fileName = `${Date.now()}.webp`;
         const storageRef = ref(storage, `users/${auth.currentUser.uid}/meals/${fileName}`);
 
-        await uploadBytes(storageRef, currentFile);
+        if (photoData?.base64) {
+          await uploadString(storageRef, photoData.base64, 'base64', { contentType: 'image/webp' });
+        } else {
+          await uploadBytes(storageRef, currentFile);
+        }
+        
         const downloadURL = await getDownloadURL(storageRef);
 
         const mealsRef = collection(db, 'users', auth.currentUser.uid, 'meals');
@@ -471,6 +528,7 @@ export default function Dashboard() {
         isAnalyzing={isAnalyzing}
         analysisResult={analysisResult}
         handleImageUpload={handleImageUpload}
+        handleNativeScan={handleNativeScan}
         confirmMeal={confirmMeal}
         loading={loading}
       />
