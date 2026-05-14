@@ -14,8 +14,11 @@ export default function Onboarding({ onComplete }) {
     weight: '',
     height: '',
     goal: '',
-    lifestyle: ''
+    lifestyle: '',
+    username: ''
   });
+
+  const forbiddenWords = ['nigger', 'faggot', 'puta', 'mierda']; // Basic filter as requested
 
   const handleNext = () => {
     if (step < 3) setStep(prev => prev + 1);
@@ -36,10 +39,15 @@ export default function Onboarding({ onComplete }) {
       // Fetch OpenAI API to calculate optimal macros based on formData
       const calculatedMacros = await calculateOnboardingMacros(formData);
 
+      const bmr = formData.gender === 'Male'
+        ? 88.362 + (13.397 * Number(formData.weight)) + (4.799 * Number(formData.height)) - (5.677 * Number(formData.age))
+        : 447.593 + (9.247 * Number(formData.weight)) + (3.098 * Number(formData.height)) - (4.330 * Number(formData.age));
+
       const userRef = doc(db, 'users', auth.currentUser.uid);
       await setDoc(userRef, {
-        profile: formData,
+        profile: { ...formData, bmr: Math.round(bmr) },
         targets: calculatedMacros,
+        username: formData.username,
         createdAt: new Date().toISOString()
       });
 
@@ -168,13 +176,27 @@ export default function Onboarding({ onComplete }) {
                     <div>
                       <label className="block text-caption font-semibold text-graphite mb-2">Height (cm)</label>
                       <input
-                        type="number"
-                        placeholder="175"
-                        value={formData.height}
-                        onChange={e => updateForm('height', e.target.value)}
-                        className="w-full bg-fog border-2 border-silver-mist/60 rounded-xl px-4 py-3 text-body-sm focus:border-brand transition-colors"
-                      />
-                    </div>
+                      type="number"
+                      placeholder="175"
+                      value={formData.height}
+                      onChange={e => updateForm('height', e.target.value)}
+                      className="w-full bg-fog border-2 border-silver-mist/60 rounded-xl px-4 py-3 text-body-sm focus:border-brand transition-colors"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-caption font-semibold text-graphite mb-2">Username</label>
+                    <input
+                      type="text"
+                      placeholder="johndoe"
+                      value={formData.username}
+                      onChange={e => updateForm('username', e.target.value)}
+                      className={`w-full bg-fog border-2 rounded-xl px-4 py-3 text-body-sm focus:border-brand transition-colors ${
+                        forbiddenWords.some(w => formData.username.toLowerCase().includes(w)) ? 'border-red-500' : 'border-silver-mist/60'
+                      }`}
+                    />
+                    {forbiddenWords.some(w => formData.username.toLowerCase().includes(w)) && (
+                      <p className="text-red-500 text-[10px] mt-1">Invalid username</p>
+                    )}
                   </div>
                 </div>
               </motion.div>
@@ -264,7 +286,7 @@ export default function Onboarding({ onComplete }) {
           {step < 3 ? (
             <button
               onClick={handleNext}
-              disabled={step === 1 && (!formData.gender || !formData.age || !formData.weight || !formData.height) || step === 2 && !formData.goal}
+              disabled={step === 1 && (!formData.gender || !formData.age || !formData.weight || !formData.height || !formData.username || forbiddenWords.some(w => formData.username.toLowerCase().includes(w))) || step === 2 && !formData.goal}
               className="bg-gradient-to-r from-brand to-azure text-snow px-8 py-3 rounded-xl font-bold text-body-sm flex items-center disabled:opacity-40 shadow-glow-brand hover:shadow-glow-blue transition-all duration-300"
             >
               Next <ArrowRight className="w-4 h-4 ml-2" />

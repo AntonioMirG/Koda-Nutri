@@ -258,7 +258,13 @@ const HomeTab = memo(({
                 <div className="h-36 w-full overflow-hidden">
                   <img src={meal.image} alt={meal.name} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
                 </div>
-                <div className="p-3.5">
+                <div className="p-3.5 relative">
+                  {meal.trafficColor && (
+                    <div className={`absolute top-3.5 right-3.5 w-3 h-3 rounded-full shadow-sm ${
+                      meal.trafficColor === 'green' ? 'bg-emerald-500' :
+                      meal.trafficColor === 'yellow' ? 'bg-amber-400' : 'bg-rose-500'
+                    }`} />
+                  )}
                   <h4 className="font-bold text-body-sm mb-1.5 truncate">{meal.name}</h4>
                   <div className="flex justify-between items-center">
                     <span className="text-caption font-bold text-brand bg-brand/10 px-2.5 py-0.5 rounded-lg">{meal.calories} kcal</span>

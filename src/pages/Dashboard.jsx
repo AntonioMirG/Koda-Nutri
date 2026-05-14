@@ -120,7 +120,7 @@ export default function Dashboard() {
     fetchData();
   }, [activeTab, selectedDay]);
 
-  const compressImage = (file, maxWidth = 512, quality = 0.7) => {
+  const compressImage = (file, maxWidth = 800, quality = 0.8) => {
     return new Promise((resolve) => {
       const reader = new FileReader();
       reader.readAsDataURL(file);
@@ -150,6 +150,14 @@ export default function Dashboard() {
   const handleImageUpload = async (e) => {
     const originalFile = e.target.files[0];
     if (originalFile) {
+      // 1. Cost Control: Limit to 5 requests per day
+      const today = new Date().toISOString().split('T')[0];
+      const todayMealsCount = allMeals.filter(m => m.timestamp.startsWith(today)).length;
+      if (todayMealsCount >= 5) {
+        alert("Daily limit reached (5 meals/day). Upgrading coming soon!");
+        return;
+      }
+
       setIsAnalyzing(true);
       setAnalysisResult(null);
 
@@ -159,9 +167,25 @@ export default function Dashboard() {
         setSelectedImage(localUrl);
         setCurrentFile(compressedFile);
 
+        // Check for offline
+        if (!navigator.onLine) {
+          throw new Error("OFFLINE");
+        }
+
         const result = await analyzeFoodImage(compressedFile);
+        
+        // Traffic Light Logic
+        let trafficColor = 'yellow';
+        const goal = userData?.profile?.goal || 'maintain';
+        if (goal === 'lose') {
+          trafficColor = result.healthScore >= 7 ? 'green' : result.healthScore >= 4 ? 'yellow' : 'red';
+        } else if (goal === 'gain') {
+          trafficColor = result.protein >= 20 ? 'green' : 'yellow';
+        }
+
         const mealWithMetadata = {
           ...result,
+          trafficColor,
           image: localUrl,
           timestamp: new Date().toISOString(),
           time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
@@ -169,7 +193,18 @@ export default function Dashboard() {
         setAnalysisResult(mealWithMetadata);
       } catch (error) {
         console.error("Analysis failed", error);
-        alert("Failed to analyze image.");
+        if (error.message === "OFFLINE") {
+          alert("Offline mode: Photo saved. We will process it when you're back online.");
+          // Save to pending in local storage
+          const pending = JSON.parse(localStorage.getItem('pending_meals') || '[]');
+          pending.push({
+            imageLocalUrl: URL.createObjectURL(originalFile), // Keep original or compressed?
+            timestamp: new Date().toISOString()
+          });
+          localStorage.setItem('pending_meals', JSON.stringify(pending));
+        } else {
+          alert("Failed to analyze image.");
+        }
       } finally {
         setIsAnalyzing(false);
       }
@@ -180,6 +215,18 @@ export default function Dashboard() {
     if (analysisResult && auth.currentUser && currentFile) {
       try {
         setLoading(true);
+
+        if (!navigator.onLine) {
+          // Offline handling for confirm
+          const pending = JSON.parse(localStorage.getItem('pending_sync') || '[]');
+          pending.push({ ...analysisResult, userId: auth.currentUser.uid });
+          localStorage.setItem('pending_sync', JSON.stringify(pending));
+          alert("Saved offline. Will sync when online.");
+          setAllMeals(prev => [analysisResult, ...prev]);
+          closeScanner();
+          return;
+        }
+
         const fileExtension = currentFile.name.split('.').pop();
         const fileName = `${Date.now()}.${fileExtension}`;
         const storageRef = ref(storage, `users/${auth.currentUser.uid}/meals/${fileName}`);
@@ -195,6 +242,7 @@ export default function Dashboard() {
           carbs: analysisResult.carbs,
           fat: analysisResult.fat,
           healthScore: analysisResult.healthScore,
+          trafficColor: analysisResult.trafficColor,
           review: analysisResult.review,
           timestamp: analysisResult.timestamp,
           time: analysisResult.time,
@@ -344,6 +392,7 @@ export default function Dashboard() {
             currentWeight={currentWeight}
             weightChange={weightChange}
             weightHistory={weightHistory}
+            allMeals={allMeals}
           />
         ) : activeTab === 'equilibrador' ? (
           <EquilibradorTab

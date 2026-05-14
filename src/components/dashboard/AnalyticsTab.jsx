@@ -7,7 +7,34 @@ import {
 import { TrendingDown, TrendingUp, Scale } from 'lucide-react';
 import { motion } from 'framer-motion';
 
-const AnalyticsTab = memo(({ weeklyTrendData, targets, macroStats, topFoods, currentWeight, weightChange, weightHistory }) => {
+const AnalyticsTab = memo(({ weeklyTrendData, targets, macroStats, topFoods, currentWeight, weightChange, weightHistory, allMeals }) => {
+  const exportData = () => {
+    const csvRows = [
+      ['Date', 'Time', 'Meal', 'Calories', 'Protein', 'Carbs', 'Fat', 'HealthScore'],
+      ...allMeals.map(m => [
+        m.timestamp.split('T')[0],
+        m.time,
+        m.name,
+        m.calories,
+        m.protein,
+        m.carbs,
+        m.fat,
+        m.healthScore
+      ])
+    ];
+
+    const csvContent = "data:text/csv;charset=utf-8," 
+      + csvRows.map(e => e.join(",")).join("\n");
+
+    const encodedUri = encodeURI(csvContent);
+    const link = document.createElement("a");
+    link.setAttribute("href", encodedUri);
+    link.setAttribute("download", "nutri_ia_report.csv");
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  };
+
   const containerVariants = {
     hidden: { opacity: 0 },
     visible: {
@@ -32,9 +59,17 @@ const AnalyticsTab = memo(({ weeklyTrendData, targets, macroStats, topFoods, cur
       animate="visible"
       className="pt-8 md:pt-10 px-4 md:px-6 pb-32 max-w-5xl mx-auto"
     >
-      <header className="mb-8">
-        <h1 className="font-display font-bold text-heading tracking-tight mb-1">Analytics</h1>
-        <p className="text-body-sm text-graphite">Monthly performance & health insights</p>
+      <header className="mb-8 flex justify-between items-end">
+        <div>
+          <h1 className="font-display font-bold text-heading tracking-tight mb-1">Analytics</h1>
+          <p className="text-body-sm text-graphite">Monthly performance & health insights</p>
+        </div>
+        <button 
+          onClick={exportData}
+          className="bg-brand/10 text-brand px-4 py-2 rounded-xl text-caption font-bold hover:bg-brand/20 transition-colors"
+        >
+          Export CSV
+        </button>
       </header>
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
