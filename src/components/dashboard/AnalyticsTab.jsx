@@ -1,4 +1,5 @@
 import React, { memo } from 'react';
+import { motion } from 'framer-motion';
 import {
   BarChart, Bar, XAxis, Tooltip, ResponsiveContainer, ReferenceLine, Cell,
   PieChart, Pie,
@@ -69,14 +70,14 @@ const AnalyticsTab = memo(({ weeklyTrendData, targets, macroStats, topFoods, cur
       animate="visible"
       className="pt-8 md:pt-10 px-4 md:px-6 pb-32 max-w-5xl mx-auto"
     >
-      <header className="mb-8 flex justify-between items-end">
-        <div>
+      <header className="mb-8 flex flex-col sm:flex-row sm:items-end justify-between gap-4">
+        <div className="flex-1 min-w-0">
           <h1 className="font-display font-bold text-heading tracking-tight mb-1">{t('analytics')}</h1>
           <p className="text-body-sm text-graphite">{t('monthlyInsights')}</p>
         </div>
         <button
           onClick={exportPDF}
-          className="bg-brand/10 text-brand px-4 py-2 rounded-xl text-caption font-bold hover:bg-brand/20 transition-colors"
+          className="w-fit bg-brand/10 text-brand px-4 py-2.5 rounded-xl text-caption font-bold hover:bg-brand/20 transition-all active:scale-95 flex-shrink-0"
         >
           {t('exportPDF')}
         </button>
