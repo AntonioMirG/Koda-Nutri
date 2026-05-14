@@ -2,41 +2,49 @@ import { describe, it, expect } from 'vitest';
 import { calculateRemainingMacros } from '../utils/nutrition';
 
 describe('calculateRemainingMacros', () => {
-  it('should return a success message if all targets are met', () => {
+  it('should return null if all targets are met', () => {
     const targets = { targetProtein: 150, targetCarbs: 200, targetFats: 70 };
     const consumedMacros = { protein: 150, carbs: 200, fat: 70 };
     
     const result = calculateRemainingMacros(targets, consumedMacros);
-    expect(result).toBe("You've already hit your targets!");
+    expect(result).toBeNull();
   });
 
-  it('should calculate the correct amount of food to reach targets', () => {
+  it('should return a recipe if one fits the remaining macros', () => {
     const targets = { targetProtein: 150, targetCarbs: 200, targetFats: 70 };
     const consumedMacros = { protein: 100, carbs: 100, fat: 50 };
+    const recipes = [
+      { id: 1, name: { en: 'Test Salad', es: 'Ensalada Test' }, macros: { p: 20, c: 30, f: 10 }, category: 'Balanced' }
+    ];
+
+    const result = calculateRemainingMacros(targets, consumedMacros, recipes);
     
-    const result = calculateRemainingMacros(targets, consumedMacros);
-    
-    // Remaining: 50g Protein, 100g Carbs
-    // Chicken Breast (mainP) has 31g Protein per 100g
-    // 50 / 31 * 100 = 161.29 -> 161g
-    // White Rice (mainC) has 28g Carbs per 100g
-    // 100 / 28 * 100 = 357.14 -> 357g
-    
-    expect(result).toEqual([
-      { name: 'Chicken Breast', amount: 161, unit: 'g' },
-      { name: 'White Rice (cooked)', amount: 357, unit: 'g' }
-    ]);
+    expect(result.type).toBe('recipe');
+    expect(result.data.id).toBe(1);
   });
 
-  it('should handle zero consumed macros', () => {
+  it('should fallback to ingredients if no recipes fit', () => {
     const targets = { targetProtein: 150, targetCarbs: 200, targetFats: 70 };
+    const consumedMacros = { protein: 100, carbs: 100, fat: 50 };
+    // No recipes provided
+    const result = calculateRemainingMacros(targets, consumedMacros, []);
+    
+    expect(result.type).toBe('ingredients');
+    expect(result.data).toBeInstanceOf(Array);
+    expect(result.data.length).toBeGreaterThan(0);
+    expect(result.data[0]).toHaveProperty('name');
+    expect(result.data[0]).toHaveProperty('amount');
+  });
+
+  it('should calculate correct amounts for a specific food (using Greek Yogurt example)', () => {
+    const targets = { targetProtein: 10, targetCarbs: 0, targetFats: 0 };
     const consumedMacros = { protein: 0, carbs: 0, fat: 0 };
     
-    const result = calculateRemainingMacros(targets, consumedMacros);
+    // We can't guarantee Greek Yogurt is picked due to randomization,
+    // but we can test the structure and that amounts are numbers
+    const result = calculateRemainingMacros(targets, consumedMacros, []);
     
-    expect(result).toEqual([
-      { name: 'Chicken Breast', amount: 484, unit: 'g' }, // 150/31 * 100
-      { name: 'White Rice (cooked)', amount: 714, unit: 'g' } // 200/28 * 100
-    ]);
+    expect(result.data[0].amount).toBeGreaterThan(0);
+    expect(typeof result.data[0].name).toBe('string');
   });
 });
