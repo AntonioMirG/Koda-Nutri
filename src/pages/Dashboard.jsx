@@ -1,11 +1,13 @@
 import React, { useState, useEffect, useMemo } from 'react';
+import { useLanguage } from '../context/LanguageContext';
+
 import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
 import { auth, db, storage } from '../services/firebase';
 import { signOut } from 'firebase/auth';
 import { doc, getDoc, collection, addDoc, query, where, getDocs, orderBy, setDoc } from 'firebase/firestore';
 import Profile from './Profile';
 import { analyzeFoodImage } from '../services/openai';
-import { RECIPES_DB } from '../data/recipes';
+import { getRecipes, seedRecipes } from '../services/recipeService';
 import { FOOD_DB, calculateRemainingMacros } from '../utils/nutrition';
 
 //Components
@@ -20,6 +22,8 @@ import MealDetailModal from '../components/dashboard/MealDetailModal';
 
 
 export default function Dashboard() {
+  const { language } = useLanguage();
+
   const [activeTab, setActiveTab] = useState('home');
   const [selectedDay, setSelectedDay] = useState('today'); // 'today' or 'yesterday'
   const [isScanning, setIsScanning] = useState(false);
@@ -40,6 +44,10 @@ export default function Dashboard() {
 
   const [searchQuery, setSearchQuery] = useState('');
   const [activeFilter, setActiveFilter] = useState('All');
+  const [recipes, setRecipes] = useState([]);
+  const [recalcTrigger, setRecalcTrigger] = useState(0);
+
+  const refreshRecommendation = () => setRecalcTrigger(prev => prev + 1);
 
   useEffect(() => {
     const timer = setInterval(() => setCurrentTime(new Date()), 1000);
@@ -119,6 +127,18 @@ export default function Dashboard() {
     };
     fetchData();
   }, [activeTab, selectedDay]);
+
+  useEffect(() => {
+    const fetchRecipesOnce = async () => {
+      let fetchedRecipes = await getRecipes();
+      if (fetchedRecipes.length === 0) {
+        await seedRecipes();
+        fetchedRecipes = await getRecipes();
+      }
+      setRecipes(fetchedRecipes);
+    };
+    fetchRecipesOnce();
+  }, []);
 
   const compressImage = (file, maxWidth = 800, quality = 0.8) => {
     return new Promise((resolve) => {
@@ -283,15 +303,20 @@ export default function Dashboard() {
   };
 
   const filteredRecipes = useMemo(() => {
-    return RECIPES_DB.filter(recipe => {
-      const matchesSearch = recipe.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        recipe.ingredients.some(i => i.toLowerCase().includes(searchQuery.toLowerCase()));
+    return recipes.filter(recipe => {
+      const name = recipe.name[language] || recipe.name['en'];
+      const ingredients = recipe.ingredients[language] || recipe.ingredients['en'];
+      
+      const matchesSearch = name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        ingredients.some(i => i.toLowerCase().includes(searchQuery.toLowerCase()));
       const matchesFilter = activeFilter === 'All' || recipe.category === activeFilter;
       return matchesSearch && matchesFilter;
     });
-  }, [searchQuery, activeFilter]);
+  }, [searchQuery, activeFilter, language, recipes]);
 
-  const targets = userData?.targets || { targetCalories: 2000, targetProtein: 150, targetCarbs: 200, targetFats: 70 };
+  const targets = useMemo(() => {
+    return userData?.targets || { targetCalories: 2000, targetProtein: 150, targetCarbs: 200, targetFats: 70 };
+  }, [userData?.targets]);
 
   const dayDate = useMemo(() => {
     const d = new Date();
@@ -299,7 +324,9 @@ export default function Dashboard() {
     return d.toISOString().split('T')[0];
   }, [selectedDay]);
 
-  const displayedMeals = allMeals.filter(m => m.timestamp.startsWith(dayDate));
+  const displayedMeals = useMemo(() => {
+    return allMeals.filter(m => m.timestamp.startsWith(dayDate));
+  }, [allMeals, dayDate]);
 
   const consumedMacros = useMemo(() => {
     return displayedMeals.reduce((acc, m) => ({
@@ -311,8 +338,8 @@ export default function Dashboard() {
   }, [displayedMeals]);
 
   const solution = useMemo(() => {
-    return calculateRemainingMacros(targets, consumedMacros);
-  }, [consumedMacros, targets]);
+    return calculateRemainingMacros(targets, consumedMacros, recipes);
+  }, [consumedMacros, targets, recalcTrigger, recipes]);
 
   const closeScanner = () => {
     setIsScanning(false);
@@ -399,7 +426,8 @@ export default function Dashboard() {
             targets={targets}
             consumedMacros={consumedMacros}
             solution={solution}
-            RECIPES_DB={RECIPES_DB}
+            refreshRecommendation={refreshRecommendation}
+            RECIPES_DB={recipes}
             searchQuery={searchQuery}
             setSearchQuery={setSearchQuery}
             activeFilter={activeFilter}

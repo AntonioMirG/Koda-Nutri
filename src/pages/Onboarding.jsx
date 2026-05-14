@@ -4,8 +4,11 @@ import { doc, setDoc, collection, getDoc } from 'firebase/firestore';
 import { Sparkles, ArrowRight, ArrowLeft, Target, Dumbbell, UserCircle } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { calculateOnboardingMacros } from '../services/openai';
+import { useLanguage } from '../context/LanguageContext';
+import { Globe } from 'lucide-react';
 
 export default function Onboarding({ onComplete }) {
+  const { t, language, toggleLanguage } = useLanguage();
   const [step, setStep] = useState(1);
   const [loading, setLoading] = useState(false);
   const [forbiddenWords, setForbiddenWords] = useState([]);
@@ -88,21 +91,31 @@ export default function Onboarding({ onComplete }) {
   ];
 
   const stepTitles = [
-    "Tell us about yourself.",
-    "What's your goal?",
-    "Your lifestyle.",
+    t('tellUsAbout'),
+    t('goal'),
+    t('lifestyle'),
   ];
 
   const stepSubtitles = [
-    "We need this to calculate your base metabolic rate.",
-    "Our AI will adjust your macros to hit this target.",
-    "This helps us account for your daily activity.",
+    t('bmrSubtitle'),
+    t('goalSubtitle'),
+    t('lifestyleSubtitle'),
   ];
 
   return (
     <div className="min-h-screen bg-fog text-ink font-sans flex flex-col justify-center px-5 pb-24 relative overflow-hidden">
       {/* Subtle background accent */}
       <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[600px] h-[300px] bg-gradient-to-b from-brand/5 to-transparent rounded-full blur-[80px] pointer-events-none" />
+
+      <div className="absolute top-0 right-5 mt-5 z-20">
+        <button 
+          onClick={toggleLanguage}
+          className="bg-snow/80 backdrop-blur-md border border-silver-mist/50 px-3 py-1.5 rounded-full flex items-center gap-2 text-caption font-bold text-brand shadow-sm"
+        >
+          <Globe className="w-4 h-4" />
+          {language === 'es' ? 'ES' : 'EN'}
+        </button>
+      </div>
 
       <div className="max-w-md mx-auto w-full relative z-10">
         {/* Step indicator */}
@@ -147,21 +160,21 @@ export default function Onboarding({ onComplete }) {
               <motion.div key="step1" initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -20 }} transition={{ duration: 0.25 }}>
                 <div className="space-y-4">
                   <div>
-                    <label className="block text-caption font-semibold text-graphite mb-2">Username</label>
+                    <label className="block text-caption font-semibold text-graphite mb-2">{t('username')}</label>
                     <input
                       type="text"
                       placeholder="johndoe"
                       value={formData.username}
                       onChange={e => updateForm('username', e.target.value)}
-                      className={`w-full bg-fog border-2 rounded-xl px-4 py-3 text-body-sm focus:border-brand transition-colors ${forbiddenWords.some(w => formData.username.toLowerCase().includes(w)) ? 'border-red-500' : 'border-silver-mist/60'
+                      className={`w-full bg-fog border-2 rounded-xl px-4 py-3 text-body-sm focus:border-brand transition-colors ${forbiddenWords.length > 0 && forbiddenWords.some(w => formData.username.toLowerCase().includes(w.toLowerCase())) ? 'border-red-500' : 'border-silver-mist/60'
                         }`}
                     />
-                    {forbiddenWords.some(w => formData.username.toLowerCase().includes(w)) && (
-                      <p className="text-red-500 text-[10px] mt-1">Invalid username</p>
+                    {forbiddenWords.length > 0 && forbiddenWords.some(w => formData.username.toLowerCase().includes(w.toLowerCase())) && (
+                      <p className="text-red-500 text-[10px] mt-1">{t('invalidUsername')}</p>
                     )}
                   </div>
                   <div>
-                    <label className="block text-caption font-semibold text-graphite mb-2">Gender</label>
+                    <label className="block text-caption font-semibold text-graphite mb-2">{t('gender')}</label>
                     <div className="grid grid-cols-2 gap-3">
                       {['Male', 'Female'].map(g => (
                         <button
@@ -172,13 +185,13 @@ export default function Onboarding({ onComplete }) {
                             : 'bg-fog text-ink border-silver-mist/60 hover:border-graphite'
                             }`}
                         >
-                          {g}
+                          {g === 'Male' ? t('male') : t('female')}
                         </button>
                       ))}
                     </div>
                   </div>
                   <div>
-                    <label className="block text-caption font-semibold text-graphite mb-2">Age</label>
+                    <label className="block text-caption font-semibold text-graphite mb-2">{t('age')}</label>
                     <input
                       type="number"
                       placeholder="25"
@@ -189,7 +202,7 @@ export default function Onboarding({ onComplete }) {
                   </div>
                   <div className="grid grid-cols-2 gap-3">
                     <div>
-                      <label className="block text-caption font-semibold text-graphite mb-2">Weight (kg)</label>
+                      <label className="block text-caption font-semibold text-graphite mb-2">{t('weight')}</label>
                       <input
                         type="number"
                         placeholder="70"
@@ -199,7 +212,7 @@ export default function Onboarding({ onComplete }) {
                       />
                     </div>
                     <div>
-                      <label className="block text-caption font-semibold text-graphite mb-2">Height (cm)</label>
+                      <label className="block text-caption font-semibold text-graphite mb-2">{t('height')}</label>
                       <input
                         type="number"
                         placeholder="175"
@@ -217,9 +230,9 @@ export default function Onboarding({ onComplete }) {
               <motion.div key="step2" initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -20 }} transition={{ duration: 0.25 }}>
                 <div className="space-y-3">
                   {[
-                    { id: 'lose', label: 'Lose weight', desc: 'Caloric deficit for fat loss', emoji: '🔥' },
-                    { id: 'maintain', label: 'Maintain weight', desc: 'Keep your current physique', emoji: '⚖️' },
-                    { id: 'gain', label: 'Gain muscle', desc: 'Caloric surplus for hypertrophy', emoji: '💪' }
+                    { id: 'lose', label: t('loseWeight'), desc: t('loseWeightDesc'), emoji: '🔥' },
+                    { id: 'maintain', label: t('maintainWeight'), desc: t('maintainWeightDesc'), emoji: '⚖️' },
+                    { id: 'gain', label: t('gainMuscle'), desc: t('gainMuscleDesc'), emoji: '💪' }
                   ].map(goal => (
                     <button
                       key={goal.id}
@@ -244,10 +257,10 @@ export default function Onboarding({ onComplete }) {
               <motion.div key="step3" initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -20 }} transition={{ duration: 0.25 }}>
                 <div className="space-y-3">
                   {[
-                    { id: 'sedentary', label: 'Sedentary', desc: 'Little to no exercise', emoji: '🪑' },
-                    { id: 'light', label: 'Lightly active', desc: '1-3 days per week', emoji: '🚶' },
-                    { id: 'moderate', label: 'Moderately active', desc: '3-5 days per week', emoji: '🏃' },
-                    { id: 'very', label: 'Very active', desc: '6-7 days per week', emoji: '🏋️' }
+                    { id: 'sedentary', label: t('sedentary'), desc: t('sedentaryDesc'), emoji: '🪑' },
+                    { id: 'light', label: t('lightlyActive'), desc: t('lightlyActiveDesc'), emoji: '🚶' },
+                    { id: 'moderate', label: t('modActive'), desc: t('modActiveDesc'), emoji: '🏃' },
+                    { id: 'very', label: t('veryActive'), desc: t('veryActiveDesc'), emoji: '🏋️' }
                   ].map(life => (
                     <button
                       key={life.id}
@@ -275,8 +288,8 @@ export default function Onboarding({ onComplete }) {
                     <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-brand to-azure flex items-center justify-center animate-pulse mb-3">
                       <Sparkles className="w-6 h-6 text-snow" />
                     </div>
-                    <span className="text-body-sm font-bold text-ink">AI is calculating your macros...</span>
-                    <span className="text-caption text-graphite mt-1">This takes a moment</span>
+                    <span className="text-body-sm font-bold text-ink">{t('calculating')}</span>
+                    <span className="text-caption text-graphite mt-1">{language === 'es' ? 'Esto toma un momento' : 'This takes a moment'}</span>
                   </motion.div>
                 )}
               </motion.div>
@@ -288,17 +301,17 @@ export default function Onboarding({ onComplete }) {
         <div className="flex justify-between gap-3">
           {step > 1 ? (
             <button onClick={handleBack} className="bg-fog border-2 border-silver-mist/60 text-ink px-6 py-3 rounded-xl font-semibold text-body-sm flex items-center hover:border-graphite transition-colors">
-              <ArrowLeft className="w-4 h-4 mr-2" /> Back
+              <ArrowLeft className="w-4 h-4 mr-2" /> {t('back')}
             </button>
           ) : <div></div>}
 
           {step < 3 ? (
             <button
               onClick={handleNext}
-              disabled={step === 1 && (!formData.gender || !formData.age || !formData.weight || !formData.height || !formData.username || forbiddenWords.some(w => formData.username.toLowerCase().includes(w))) || step === 2 && !formData.goal}
+              disabled={step === 1 && (!formData.gender || !formData.age || !formData.weight || !formData.height || !formData.username || (forbiddenWords.length > 0 && forbiddenWords.some(w => formData.username.toLowerCase().includes(w.toLowerCase())))) || step === 2 && !formData.goal}
               className="bg-gradient-to-r from-brand to-azure text-snow px-8 py-3 rounded-xl font-bold text-body-sm flex items-center disabled:opacity-40 shadow-glow-brand hover:shadow-glow-blue transition-all duration-300"
             >
-              Next <ArrowRight className="w-4 h-4 ml-2" />
+              {t('next')} <ArrowRight className="w-4 h-4 ml-2" />
             </button>
           ) : (
             <button
@@ -306,7 +319,7 @@ export default function Onboarding({ onComplete }) {
               disabled={!formData.lifestyle || loading}
               className="bg-gradient-to-r from-brand to-azure text-snow px-8 py-3 rounded-xl font-bold text-body-sm flex items-center disabled:opacity-40 shadow-glow-brand hover:shadow-glow-blue transition-all duration-300"
             >
-              Calculate Plan <Sparkles className="w-4 h-4 ml-2" />
+              {t('calculate')} <Sparkles className="w-4 h-4 ml-2" />
             </button>
           )}
         </div>

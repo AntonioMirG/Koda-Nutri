@@ -1,13 +1,14 @@
-import React from 'react';
-import { Home, BarChart2, Settings, Plus, Trophy, Sparkles, LogOut } from 'lucide-react';
+import { Home, BarChart2, Settings, Plus, Trophy, Sparkles, LogOut, Globe } from 'lucide-react';
 import { signOut } from 'firebase/auth';
+import { useLanguage } from '../../context/LanguageContext';
 
 export default function Sidebar({ activeTab, setActiveTab, setIsScanning, auth }) {
+  const { t, language, toggleLanguage } = useLanguage();
   const navItems = [
-    { id: 'home', label: 'Home', icon: <Home className="w-5 h-5" /> },
-    { id: 'analytics', label: 'Analytics', icon: <BarChart2 className="w-5 h-5" /> },
-    { id: 'equilibrador', label: 'Equilibrador', icon: <Trophy className="w-5 h-5" /> },
-    { id: 'settings', label: 'Settings', icon: <Settings className="w-5 h-5" /> },
+    { id: 'home', label: t('dashboard'), icon: <Home className="w-5 h-5" /> },
+    { id: 'analytics', label: t('analytics'), icon: <BarChart2 className="w-5 h-5" /> },
+    { id: 'equilibrador', label: t('equilibrador') || 'Equilibrador', icon: <Trophy className="w-5 h-5" /> },
+    { id: 'settings', label: t('settings'), icon: <Settings className="w-5 h-5" /> },
   ];
 
   return (
@@ -29,7 +30,7 @@ export default function Sidebar({ activeTab, setActiveTab, setIsScanning, auth }
           className="w-full bg-gradient-to-r from-brand to-azure text-snow py-3.5 rounded-xl font-bold text-body-sm flex items-center justify-center space-x-2 shadow-glow-brand hover:shadow-glow-blue hover:scale-[1.02] active:scale-[0.98] transition-all duration-200"
         >
           <Plus className="w-5 h-5" />
-          <span>Scan Meal</span>
+          <span>{t('scanMeal')}</span>
         </button>
       </div>
 

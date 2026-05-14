@@ -5,20 +5,21 @@ import {
   LineChart, Line
 } from 'recharts';
 import { TrendingDown, TrendingUp, Scale } from 'lucide-react';
-import { motion } from 'framer-motion';
 import jsPDF from 'jspdf';
 import autoTable from 'jspdf-autotable';
+import { useLanguage } from '../../context/LanguageContext';
 
 const AnalyticsTab = memo(({ weeklyTrendData, targets, macroStats, topFoods, currentWeight, weightChange, weightHistory, allMeals }) => {
+  const { t, language } = useLanguage();
   const exportPDF = () => {
     const doc = new jsPDF();
 
     // Add Title
     doc.setFontSize(20);
-    doc.text("Koda -  Weekly Report", 14, 22);
+    doc.text(`Koda - ${t('weeklyReport')}`, 14, 22);
     doc.setFontSize(11);
     doc.setTextColor(100);
-    doc.text(`Generated on: ${new Date().toLocaleDateString()}`, 14, 30);
+    doc.text(`${t('generatedOn')}: ${new Date().toLocaleDateString()}`, 14, 30);
 
     // Add Summary Table
     const tableColumn = ["Date", "Time", "Meal", "Calories", "Protein", "Carbs", "Fat"];
@@ -70,21 +71,21 @@ const AnalyticsTab = memo(({ weeklyTrendData, targets, macroStats, topFoods, cur
     >
       <header className="mb-8 flex justify-between items-end">
         <div>
-          <h1 className="font-display font-bold text-heading tracking-tight mb-1">Analytics</h1>
-          <p className="text-body-sm text-graphite">Monthly performance & health insights</p>
+          <h1 className="font-display font-bold text-heading tracking-tight mb-1">{t('analytics')}</h1>
+          <p className="text-body-sm text-graphite">{t('monthlyInsights')}</p>
         </div>
         <button
           onClick={exportPDF}
           className="bg-brand/10 text-brand px-4 py-2 rounded-xl text-caption font-bold hover:bg-brand/20 transition-colors"
         >
-          Export PDF
+          {t('exportPDF')}
         </button>
       </header>
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         {/* Weekly Caloric Balance */}
         <motion.div variants={itemVariants} className="card-white shadow-card p-5 md:col-span-2">
-          <h3 className="text-caption font-bold text-graphite uppercase tracking-wider mb-4">Weekly Calorie Balance</h3>
+          <h3 className="text-caption font-bold text-graphite uppercase tracking-wider mb-4">{t('weeklyCalorieBalance')}</h3>
           <div className="h-56 w-full">
             <ResponsiveContainer width="100%" height="100%">
               <BarChart data={weeklyTrendData}>
@@ -114,15 +115,15 @@ const AnalyticsTab = memo(({ weeklyTrendData, targets, macroStats, topFoods, cur
             </ResponsiveContainer>
           </div>
           <div className="mt-3 flex items-center justify-center space-x-5 text-[10px] text-graphite font-semibold">
-            <span className="flex items-center"><div className="w-2 h-2 rounded-full bg-coral mr-1.5"></div>Over</span>
-            <span className="flex items-center"><div className="w-2 h-2 rounded-full bg-mint mr-1.5"></div>On target</span>
-            <span className="flex items-center"><div className="w-2 h-2 rounded-full bg-amber mr-1.5"></div>Under</span>
+            <span className="flex items-center"><div className="w-2 h-2 rounded-full bg-coral mr-1.5"></div>{t('over')}</span>
+            <span className="flex items-center"><div className="w-2 h-2 rounded-full bg-mint mr-1.5"></div>{t('onTarget')}</span>
+            <span className="flex items-center"><div className="w-2 h-2 rounded-full bg-amber mr-1.5"></div>{t('under')}</span>
           </div>
         </motion.div>
 
         {/* Macro Composition */}
         <motion.div variants={itemVariants} className="card-white shadow-card p-5">
-          <h3 className="text-caption font-bold text-graphite uppercase tracking-wider mb-5">30-Day Macro Split</h3>
+          <h3 className="text-caption font-bold text-graphite uppercase tracking-wider mb-5">{t('macroSplit')}</h3>
           <div className="flex flex-col items-center">
             <div className="w-full h-40">
               <ResponsiveContainer width="100%" height="100%">
@@ -146,7 +147,7 @@ const AnalyticsTab = memo(({ weeklyTrendData, targets, macroStats, topFoods, cur
                 <div key={i} className="flex items-center justify-between">
                   <div className="flex items-center">
                     <div className="w-3 h-3 rounded-[3px] mr-2.5" style={{ backgroundColor: m.color }}></div>
-                    <span className="text-body-sm font-semibold">{m.name}</span>
+                    <span className="text-body-sm font-semibold">{m.name === 'Protein' ? t('protein') : m.name === 'Carbs' ? t('carbs') : t('fats')}</span>
                   </div>
                   <div className="flex items-center space-x-3">
                     <span className="text-caption text-graphite">{Math.round(m.value)}g</span>
@@ -160,7 +161,7 @@ const AnalyticsTab = memo(({ weeklyTrendData, targets, macroStats, topFoods, cur
 
         {/* Top 5 Foods */}
         <motion.div variants={itemVariants} className="card-white shadow-card p-5">
-          <h3 className="text-caption font-bold text-graphite uppercase tracking-wider mb-4">Most Tracked Meals</h3>
+          <h3 className="text-caption font-bold text-graphite uppercase tracking-wider mb-4">{t('mostTracked')}</h3>
           <div className="space-y-3">
             {topFoods.length > 0 ? topFoods.map((food, i) => (
               <div key={i} className="flex items-center justify-between">
@@ -173,7 +174,7 @@ const AnalyticsTab = memo(({ weeklyTrendData, targets, macroStats, topFoods, cur
                 </div>
                 <span className="bg-fog px-2.5 py-0.5 rounded-lg text-caption font-bold text-graphite">{food.count}×</span>
               </div>
-            )) : <p className="text-caption text-graphite italic">No meals logged yet.</p>}
+            )) : <p className="text-caption text-graphite italic">{t('noMealsLogged')}</p>}
           </div>
         </motion.div>
 
@@ -185,7 +186,7 @@ const AnalyticsTab = memo(({ weeklyTrendData, targets, macroStats, topFoods, cur
                 <Scale className="w-5 h-5 text-brand" />
               </div>
               <div>
-                <h3 className="text-caption font-bold text-graphite uppercase tracking-wider">Weight Progress</h3>
+                <h3 className="text-caption font-bold text-graphite uppercase tracking-wider">{t('weightProgress')}</h3>
                 <div className="text-heading-sm font-bold">{currentWeight} kg</div>
               </div>
             </div>
@@ -217,7 +218,7 @@ const AnalyticsTab = memo(({ weeklyTrendData, targets, macroStats, topFoods, cur
 
           {/* Weight Timeline */}
           <div className="border-t border-silver-mist/60 pt-4">
-            <h4 className="text-[10px] font-bold text-graphite uppercase tracking-wider mb-3">Recent Entries</h4>
+            <h4 className="text-[10px] font-bold text-graphite uppercase tracking-wider mb-3">{t('recentEntries')}</h4>
             <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
               {[...weightHistory].reverse().slice(0, 6).map((log, i) => (
                 <div key={i} className="flex justify-between items-center text-body-sm p-3 bg-fog rounded-xl">

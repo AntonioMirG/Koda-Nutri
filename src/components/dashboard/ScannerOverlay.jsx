@@ -1,10 +1,11 @@
-import React from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { X, Flame, Activity, Beef, Droplet, ImageIcon, Camera } from 'lucide-react';
+import { useLanguage } from '../../context/LanguageContext';
 
 export default function ScannerOverlay({ 
   isScanning, closeScanner, selectedImage, isAnalyzing, analysisResult, handleImageUpload, confirmMeal, loading 
 }) {
+  const { t } = useLanguage();
   return (
     <AnimatePresence>
       {isScanning && (
@@ -20,7 +21,7 @@ export default function ScannerOverlay({
             <button onClick={closeScanner} className="w-10 h-10 rounded-xl bg-white/10 flex items-center justify-center backdrop-blur-md hover:bg-white/20 transition-colors">
               <X className="w-5 h-5" />
             </button>
-            <span className="font-bold text-body">Scanner</span>
+            <span className="font-bold text-body">{t('scanner')}</span>
             <div className="w-10 h-10" />
           </div>
 
@@ -44,7 +45,7 @@ export default function ScannerOverlay({
                     className="absolute top-4 left-4 right-4 h-0.5 bg-gradient-to-r from-transparent via-brand to-transparent opacity-60"
                   />
                 </div>
-                <p className="mt-6 text-body-sm text-white/50 font-medium">Point camera at your food</p>
+                <p className="mt-6 text-body-sm text-white/50 font-medium">{t('pointCamera')}</p>
               </div>
             )}
 
@@ -53,8 +54,8 @@ export default function ScannerOverlay({
                 <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-brand to-azure flex items-center justify-center animate-pulse mb-4">
                   <Activity className="w-7 h-7 text-snow" />
                 </div>
-                <span className="text-body font-bold">Analyzing meal...</span>
-                <span className="text-caption text-white/40 mt-1">GPT-4o Vision at work</span>
+                <span className="text-body font-bold">{t('analyzing')}</span>
+                <span className="text-caption text-white/40 mt-1">AI Vision at work</span>
               </div>
             )}
           </div>
@@ -74,7 +75,7 @@ export default function ScannerOverlay({
                   <div className="w-12 h-12 rounded-xl bg-white/10 backdrop-blur-md flex items-center justify-center mb-1.5 hover:bg-white/20 transition-colors">
                     <ImageIcon className="w-5 h-5 text-snow" />
                   </div>
-                  <span className="text-[10px] font-semibold text-white/60">Gallery</span>
+                  <span className="text-[10px] font-semibold text-white/60">{t('gallery')}</span>
                 </div>
 
                 {/* Camera shutter */}
@@ -103,17 +104,17 @@ export default function ScannerOverlay({
                 <div className="w-10 h-1 bg-silver-mist rounded-full mx-auto mb-5" />
                 
                 <div className="mb-5">
-                  <span className="text-[10px] font-bold text-brand uppercase tracking-wider mb-1 block">Nutrition Analysis</span>
+                  <span className="text-[10px] font-bold text-brand uppercase tracking-wider mb-1 block">{t('nutritionAnalysis')}</span>
                   <h2 className="font-display font-bold text-heading-sm mt-1 leading-tight">{analysisResult.name}</h2>
                   <p className="text-caption text-graphite mt-1 leading-relaxed">{analysisResult.review}</p>
                 </div>
 
                 <div className="grid grid-cols-2 gap-2.5 mb-5">
                   {[
-                    { label: 'Calories', value: analysisResult.calories, unit: 'kcal', icon: <Flame className="w-4 h-4" />, bg: 'bg-fog', color: 'text-ink' },
-                    { label: 'Carbs', value: `${analysisResult.carbs}g`, icon: <Activity className="w-4 h-4" />, bg: 'bg-amber/10', color: 'text-amber' },
-                    { label: 'Protein', value: `${analysisResult.protein}g`, icon: <Beef className="w-4 h-4" />, bg: 'bg-coral/10', color: 'text-coral' },
-                    { label: 'Fats', value: `${analysisResult.fat}g`, icon: <Droplet className="w-4 h-4" />, bg: 'bg-azure/10', color: 'text-azure' },
+                    { label: t('calories'), value: analysisResult.calories, unit: 'kcal', icon: <Flame className="w-4 h-4" />, bg: 'bg-fog', color: 'text-ink' },
+                    { label: t('carbs'), value: `${analysisResult.carbs}g`, icon: <Activity className="w-4 h-4" />, bg: 'bg-amber/10', color: 'text-amber' },
+                    { label: t('protein'), value: `${analysisResult.protein}g`, icon: <Beef className="w-4 h-4" />, bg: 'bg-coral/10', color: 'text-coral' },
+                    { label: t('fats'), value: `${analysisResult.fat}g`, icon: <Droplet className="w-4 h-4" />, bg: 'bg-azure/10', color: 'text-azure' },
                   ].map((m, i) => (
                     <div key={i} className={`flex items-center p-3 rounded-xl ${m.bg}`}>
                       <div className={`w-8 h-8 rounded-lg ${m.bg} flex items-center justify-center mr-2.5 ${m.color}`}>
@@ -131,7 +132,7 @@ export default function ScannerOverlay({
                 <div className="flex items-center justify-between p-3.5 bg-mint/10 rounded-xl mb-6">
                   <div className="flex items-center">
                     <Activity className="w-5 h-5 text-mint mr-2.5" />
-                    <span className="font-semibold text-body-sm">Health Score</span>
+                    <span className="font-semibold text-body-sm">{t('healthScore')}</span>
                   </div>
                   <div className="flex items-center">
                     <span className="font-bold text-body-sm mr-3">{analysisResult.healthScore}/10</span>
@@ -147,14 +148,14 @@ export default function ScannerOverlay({
                     onClick={closeScanner}
                     className="bg-fog text-ink flex-1 py-3.5 font-bold rounded-xl text-body-sm transition-colors hover:bg-silver-mist"
                   >
-                    Discard
+                    {t('discard')}
                   </button>
                   <button
                     onClick={confirmMeal}
                     disabled={loading}
                     className="bg-gradient-to-r from-brand to-azure text-snow flex-1 py-3.5 font-bold rounded-xl text-body-sm shadow-glow-brand hover:shadow-glow-blue transition-all hover:scale-[1.01] disabled:opacity-50 disabled:cursor-not-allowed"
                   >
-                    {loading ? 'Saving...' : 'Save Meal'}
+                    {loading ? t('saving') : t('saveMeal')}
                   </button>
                 </div>
               </motion.div>

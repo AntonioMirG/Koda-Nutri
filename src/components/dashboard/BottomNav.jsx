@@ -1,7 +1,8 @@
-import React from 'react';
 import { Home, BarChart2, Settings, Plus, Trophy } from 'lucide-react';
+import { useLanguage } from '../../context/LanguageContext';
 
 export default function BottomNav({ activeTab, setActiveTab, setIsScanning }) {
+  const { t } = useLanguage();
   return (
     <nav className="md:hidden fixed bottom-0 left-0 right-0 z-40">
       {/* Frosted glass background */}
@@ -15,7 +16,7 @@ export default function BottomNav({ activeTab, setActiveTab, setIsScanning }) {
             onClick={() => setActiveTab('home')}
           >
             <Home className="w-5 h-5" />
-            <span className="text-[10px] font-semibold">Home</span>
+            <span className="text-[10px] font-semibold">{t('dashboard')}</span>
           </button>
 
           {/* Analytics */}
@@ -26,7 +27,7 @@ export default function BottomNav({ activeTab, setActiveTab, setIsScanning }) {
             onClick={() => setActiveTab('analytics')}
           >
             <BarChart2 className="w-5 h-5" />
-            <span className="text-[10px] font-semibold">Analytics</span>
+            <span className="text-[10px] font-semibold">{t('analytics')}</span>
           </button>
 
           {/* Center Scan Button Spacer */}
@@ -42,7 +43,7 @@ export default function BottomNav({ activeTab, setActiveTab, setIsScanning }) {
             onClick={() => setActiveTab('equilibrador')}
           >
             <Trophy className="w-5 h-5" />
-            <span className="text-[10px] font-semibold">Balance</span>
+            <span className="text-[10px] font-semibold">{t('equilibrador')}</span>
           </button>
 
           {/* Settings */}
@@ -53,7 +54,7 @@ export default function BottomNav({ activeTab, setActiveTab, setIsScanning }) {
             onClick={() => setActiveTab('settings')}
           >
             <Settings className="w-5 h-5" />
-            <span className="text-[10px] font-semibold">Profile</span>
+            <span className="text-[10px] font-semibold">{t('settings')}</span>
           </button>
 
           {/* Floating Scan Button */}

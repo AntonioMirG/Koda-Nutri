@@ -1,10 +1,12 @@
 import React, { useState, useEffect, useMemo } from 'react';
-import { User, Target, Calendar, Save, LogOut, ChevronRight, Sparkles, Check } from 'lucide-react';
+import { User, Target, Calendar, Save, LogOut, ChevronRight, Sparkles, Check, Globe } from 'lucide-react';
 import { auth, db } from '../services/firebase';
 import { doc, getDoc, updateDoc, collection, addDoc, query, where, getDocs, orderBy } from 'firebase/firestore';
 import { signOut } from 'firebase/auth';
+import { useLanguage } from '../context/LanguageContext';
 
 export default function Profile() {
+  const { t, language, toggleLanguage } = useLanguage();
   const [profileData, setProfileData] = useState(null);
   const [isEditing, setIsEditing] = useState(false);
   const [formData, setFormData] = useState(null);
@@ -86,8 +88,8 @@ export default function Profile() {
   return (
     <div className="pt-8 md:pt-10 px-4 md:px-6 pb-32 max-w-2xl mx-auto">
       <header className="mb-8">
-        <h1 className="font-display font-bold text-heading tracking-tight mb-1">Profile</h1>
-        <p className="text-body-sm text-graphite">Manage your goals and personal data.</p>
+        <h1 className="font-display font-bold text-heading tracking-tight mb-1">{t('settings')}</h1>
+        <p className="text-body-sm text-graphite">{t('profileSubtitle') || 'Manage your goals and personal data.'}</p>
       </header>
 
       <div className="space-y-4">
@@ -108,10 +110,10 @@ export default function Profile() {
           {formData && (
             <div className="grid grid-cols-2 gap-3 mb-5">
               {[
-                { label: 'Age', key: 'age', suffix: 'yrs', type: 'number' },
-                { label: 'Gender', key: 'gender', type: 'select', options: ['Male', 'Female'] },
-                { label: 'Weight', key: 'weight', suffix: 'kg', type: 'number' },
-                { label: 'Height', key: 'height', suffix: 'cm', type: 'number' },
+                { label: t('age'), key: 'age', suffix: 'yrs', type: 'number' },
+                { label: t('gender'), key: 'gender', type: 'select', options: ['Male', 'Female'] },
+                { label: t('weight'), key: 'weight', suffix: 'kg', type: 'number' },
+                { label: t('height'), key: 'height', suffix: 'cm', type: 'number' },
               ].map((field) => (
                 <div key={field.key}>
                   <label className="block text-[10px] text-graphite uppercase font-bold tracking-wider mb-1.5">{field.label}</label>
@@ -122,7 +124,7 @@ export default function Profile() {
                         onChange={e => setFormData({...formData, [field.key]: e.target.value})}
                         className="w-full bg-fog border-2 border-silver-mist/60 rounded-xl p-2.5 text-body-sm font-medium focus:border-brand transition-colors"
                       >
-                        {field.options.map(opt => <option key={opt} value={opt}>{opt}</option>)}
+                        {field.options.map(opt => <option key={opt} value={opt}>{opt === 'Male' ? t('male') : t('female')}</option>)}
                       </select>
                     ) : (
                       <input
@@ -133,7 +135,9 @@ export default function Profile() {
                       />
                     )
                   ) : (
-                    <div className="font-bold text-body-sm">{formData[field.key]} {field.suffix || ''}</div>
+                    <div className="font-bold text-body-sm">
+                      {field.key === 'gender' ? (formData[field.key] === 'Male' ? t('male') : t('female')) : formData[field.key]} {field.suffix || ''}
+                    </div>
                   )}
                 </div>
               ))}
@@ -145,7 +149,7 @@ export default function Profile() {
               onClick={() => setIsEditing(true)} 
               className="w-full bg-fog border-2 border-silver-mist/60 py-3 rounded-xl text-ink text-body-sm font-bold hover:border-graphite transition-all flex items-center justify-center"
             >
-              Edit Personal Data
+              {t('editData') || 'Edit Personal Data'}
               <ChevronRight className="w-4 h-4 ml-1.5" />
             </button>
           ) : (
@@ -154,9 +158,38 @@ export default function Profile() {
               disabled={loading} 
               className="w-full bg-gradient-to-r from-brand to-azure text-snow py-3 rounded-xl text-body-sm font-bold shadow-glow-brand hover:shadow-glow-blue flex items-center justify-center active:scale-[0.98] transition-all"
             >
-              <Save className="w-4 h-4 mr-2"/> Save Changes
+              <Save className="w-4 h-4 mr-2"/> {t('saveChanges') || 'Save Changes'}
             </button>
           )}
+        </div>
+
+        {/* Language Selection Card */}
+        <div className="card-white shadow-card p-5">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center">
+              <div className="w-9 h-9 rounded-xl bg-brand/10 flex items-center justify-center mr-3">
+                <Globe className="w-5 h-5 text-brand" />
+              </div>
+              <div>
+                <h3 className="font-display font-bold text-body-sm">{t('language')}</h3>
+                <p className="text-[10px] text-graphite uppercase font-bold tracking-wider">{language === 'es' ? 'Español' : 'English'}</p>
+              </div>
+            </div>
+            <div className="flex bg-fog rounded-lg p-1">
+              <button 
+                onClick={() => language !== 'es' && toggleLanguage()}
+                className={`px-4 py-1.5 rounded-md text-caption font-bold transition-all ${language === 'es' ? 'bg-snow text-brand shadow-sm' : 'text-graphite hover:text-ink'}`}
+              >
+                ES
+              </button>
+              <button 
+                onClick={() => language !== 'en' && toggleLanguage()}
+                className={`px-4 py-1.5 rounded-md text-caption font-bold transition-all ${language === 'en' ? 'bg-snow text-brand shadow-sm' : 'text-graphite hover:text-ink'}`}
+              >
+                EN
+              </button>
+            </div>
+          </div>
         </div>
 
         {/* Goals & Targets */}
@@ -167,22 +200,22 @@ export default function Profile() {
                 <Target className="w-5 h-5 text-brand" />
               </div>
               <div>
-                <h3 className="font-display font-bold text-body-sm">Daily Targets</h3>
-                <p className="text-[10px] text-graphite">AI Calculated</p>
+                <h3 className="font-display font-bold text-body-sm">{t('dailyTargets')}</h3>
+                <p className="text-[10px] text-graphite">{t('aiCalculated')}</p>
               </div>
             </div>
-            <p className="text-caption text-graphite mb-5">Based on your goal to <span className="font-bold text-ink">{profileData.profile.goal}</span>.</p>
+            <p className="text-caption text-graphite mb-5">{t('basedOnGoal')} <span className="font-bold text-ink">{profileData.profile.goal === 'lose' ? t('loseWeight') : profileData.profile.goal === 'maintain' ? t('maintainWeight') : t('gainMuscle')}</span>.</p>
             
             <div className="grid grid-cols-2 gap-3">
               {[
-                { label: 'Calories', value: profileData.targets.targetCalories, unit: 'kcal', color: 'text-ink', bg: 'bg-fog' },
-                { label: 'Protein', value: profileData.targets.targetProtein, unit: 'g', color: 'text-coral', bg: 'bg-coral/10' },
-                { label: 'Carbs', value: profileData.targets.targetCarbs, unit: 'g', color: 'text-amber', bg: 'bg-amber/10' },
-                { label: 'Fats', value: profileData.targets.targetFats, unit: 'g', color: 'text-azure', bg: 'bg-azure/10' },
-              ].map((t, i) => (
-                <div key={i} className={`${t.bg} rounded-xl p-3.5`}>
-                  <div className={`text-heading-sm font-bold ${t.color}`}>{t.value}<span className="text-caption text-graphite ml-0.5 font-medium">{t.unit}</span></div>
-                  <div className="text-[10px] text-graphite font-bold uppercase tracking-wider mt-0.5">{t.label}</div>
+                { label: t('calories'), value: profileData.targets.targetCalories, unit: 'kcal', color: 'text-ink', bg: 'bg-fog' },
+                { label: t('protein'), value: profileData.targets.targetProtein, unit: 'g', color: 'text-coral', bg: 'bg-coral/10' },
+                { label: t('carbs'), value: profileData.targets.targetCarbs, unit: 'g', color: 'text-amber', bg: 'bg-amber/10' },
+                { label: t('fats'), value: profileData.targets.targetFats, unit: 'g', color: 'text-azure', bg: 'bg-azure/10' },
+              ].map((t_item, i) => (
+                <div key={i} className={`${t_item.bg} rounded-xl p-3.5`}>
+                  <div className={`text-heading-sm font-bold ${t_item.color}`}>{t_item.value}<span className="text-caption text-graphite ml-0.5 font-medium">{t_item.unit}</span></div>
+                  <div className="text-[10px] text-graphite font-bold uppercase tracking-wider mt-0.5">{t_item.label}</div>
                 </div>
               ))}
             </div>
@@ -219,12 +252,12 @@ export default function Profile() {
                     <Calendar className="w-5 h-5 text-mint" />
                   </div>
                   <div>
-                    <h3 className="font-display font-bold text-body-sm">This Week</h3>
-                    <p className="text-[10px] text-graphite">{activeDays}/7 days logged</p>
+                    <h3 className="font-display font-bold text-body-sm">{t('thisWeek')}</h3>
+                    <p className="text-[10px] text-graphite">{activeDays}/7 {t('daysLogged')}</p>
                   </div>
                 </div>
                 {activeDays >= 5 && (
-                  <span className="text-[10px] bg-mint/10 text-mint px-2.5 py-1 rounded-lg font-bold">🔥 Great week!</span>
+                  <span className="text-[10px] bg-mint/10 text-mint px-2.5 py-1 rounded-lg font-bold">🔥 {t('greatWeek')}</span>
                 )}
               </div>
               
@@ -263,7 +296,7 @@ export default function Profile() {
           className="w-full flex items-center justify-center py-4 text-coral font-bold text-body-sm rounded-xl hover:bg-coral/5 transition-colors"
         >
           <LogOut className="w-4 h-4 mr-2" />
-          Sign Out from Koda
+          {t('signOut')}
         </button>
       </div>
     </div>

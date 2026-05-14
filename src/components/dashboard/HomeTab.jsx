@@ -1,6 +1,7 @@
 import React, { memo } from 'react';
 import { motion } from 'framer-motion';
 import { Flame, Droplet, Plus, Activity, Beef, Minus } from 'lucide-react';
+import { useLanguage } from '../../context/LanguageContext';
 
 const HomeTab = memo(({ 
   auth, streak, selectedDay, setSelectedDay, caloriesLeft, isOverGoal, 
@@ -8,6 +9,7 @@ const HomeTab = memo(({
   waterIntake, waterTarget, updateWater, fasting, currentTime, toggleFast, 
   displayedMeals, setSelectedLoggedMeal 
 }) => {
+  const { t } = useLanguage();
   const containerVariants = {
     hidden: { opacity: 0 },
     visible: {
@@ -26,9 +28,9 @@ const HomeTab = memo(({
   };
 
   const macros = [
-    { label: 'Protein', value: consumedMacros.protein, percent: protPercent, color: '#FF6B6B', bg: 'bg-coral/10' },
-    { label: 'Carbs', value: consumedMacros.carbs, percent: carbPercent, color: '#FF9F0A', bg: 'bg-amber/10' },
-    { label: 'Fats', value: consumedMacros.fat, percent: fatPercent, color: '#0A84FF', bg: 'bg-azure/10' },
+    { label: t('protein'), value: consumedMacros.protein, percent: protPercent, color: '#FF6B6B', bg: 'bg-coral/10' },
+    { label: t('carbs'), value: consumedMacros.carbs, percent: carbPercent, color: '#FF9F0A', bg: 'bg-amber/10' },
+    { label: t('fats'), value: consumedMacros.fat, percent: fatPercent, color: '#0A84FF', bg: 'bg-azure/10' },
   ];
 
   return (
@@ -42,7 +44,7 @@ const HomeTab = memo(({
       <header className="mb-8">
         <div className="flex items-center justify-between mb-5">
           <div>
-            <p className="text-caption text-graphite font-medium mb-0.5">Welcome back</p>
+            <p className="text-caption text-graphite font-medium mb-0.5">{t('welcome')}</p>
             <h1 className="font-display font-bold text-heading-sm tracking-tight">
               {auth.currentUser?.displayName || auth.currentUser?.email?.split('@')[0] || "User"}
             </h1>
@@ -50,7 +52,7 @@ const HomeTab = memo(({
           {streak > 0 && (
             <div className="flex items-center bg-gradient-to-r from-amber/15 to-coral/15 px-3.5 py-1.5 rounded-xl border border-amber/20">
               <Flame className="w-4 h-4 text-amber mr-1.5" />
-              <span className="text-caption font-bold text-amber">{streak} day streak</span>
+              <span className="text-caption font-bold text-amber">{streak} {t('streak') || 'day streak'}</span>
             </div>
           )}
         </div>
@@ -67,7 +69,7 @@ const HomeTab = memo(({
                   : 'text-graphite hover:text-ink'
               }`}
             >
-              {day}
+              {t(day)}
             </button>
           ))}
         </div>
@@ -103,7 +105,7 @@ const HomeTab = memo(({
                 {caloriesLeft > 0 ? caloriesLeft : Math.abs(caloriesLeft)}
               </span>
               <span className="text-[10px] text-graphite font-bold uppercase mt-1 tracking-wide">
-                {caloriesLeft > 0 ? 'kcal left' : 'kcal over'}
+                {caloriesLeft > 0 ? t('caloriesLeft') : t('caloriesOver')}
               </span>
             </div>
           </div>
@@ -148,7 +150,7 @@ const HomeTab = memo(({
                 <Droplet className={`w-5 h-5 z-10 ${waterIntake > 0 ? 'text-azure' : 'text-graphite/30'}`} />
               </div>
               <div>
-                <h3 className="font-bold text-caption uppercase tracking-wider text-graphite mb-0.5">Water</h3>
+                <h3 className="font-bold text-caption uppercase tracking-wider text-graphite mb-0.5">{t('water')}</h3>
                 <div className="flex items-baseline space-x-1">
                   <span className="text-body-sm font-bold">{((waterIntake * 250) / 1000).toFixed(1)}L</span>
                   <span className="text-[10px] text-graphite">/ {((waterTarget * 250) / 1000).toFixed(1)}L</span>
@@ -189,14 +191,14 @@ const HomeTab = memo(({
                 <Activity className={`w-5 h-5 ${fasting.active ? 'text-brand animate-pulse' : 'text-graphite/30'}`} />
               </div>
               <div>
-                <h3 className="font-bold text-caption uppercase tracking-wider text-graphite mb-0.5">Fasting</h3>
+                <h3 className="font-bold text-caption uppercase tracking-wider text-graphite mb-0.5">{t('fasting')}</h3>
                 <div className="text-body-sm font-bold">
                   {fasting.active ? (() => {
                     const diff = Math.floor((currentTime - new Date(fasting.startTime)) / 1000);
                     const h = Math.floor(diff / 3600);
                     const m = Math.floor((diff % 3600) / 60);
                     return `${h}h ${m}m`;
-                  })() : 'Not active'}
+                  })() : t('notActive')}
                 </div>
               </div>
             </div>
@@ -208,7 +210,7 @@ const HomeTab = memo(({
                   : 'bg-brand text-snow shadow-sm hover:bg-brand-dark'
               }`}
             >
-              {fasting.active ? 'Stop' : 'Start'}
+              {fasting.active ? t('stop') : t('start')}
             </button>
           </div>
           {/* Fasting progress */}
@@ -232,17 +234,17 @@ const HomeTab = memo(({
       {/* Recent Meals */}
       <motion.div variants={itemVariants}>
         <div className="flex items-center justify-between mb-4">
-          <h3 className="font-display font-bold text-body tracking-tight">Recent Meals</h3>
+          <h3 className="font-display font-bold text-body tracking-tight">{t('recentMeals')}</h3>
           <div className="bg-brand/10 text-brand px-3 py-1 rounded-lg text-caption font-bold">
-            {displayedMeals.length} logged
+            {displayedMeals.length} {t('logged')}
           </div>
         </div>
 
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
           {displayedMeals.length === 0 ? (
             <div className="col-span-full bg-fog rounded-2xl border-2 border-dashed border-silver-mist py-12 text-center">
-              <p className="text-body-sm text-graphite font-medium">No meals logged for {selectedDay}.</p>
-              <p className="text-caption text-graphite/60 mt-1">Tap + to scan your first meal</p>
+              <p className="text-body-sm text-graphite font-medium">{t('noMealsLoggedFor')} {selectedDay}.</p>
+              <p className="text-caption text-graphite/60 mt-1">{t('tapToScan')}</p>
             </div>
           ) : (
             displayedMeals.map((meal, index) => (

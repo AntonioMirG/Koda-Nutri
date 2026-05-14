@@ -5,8 +5,9 @@ import { doc, getDoc } from 'firebase/firestore';
 import Landing from './pages/Landing';
 import Dashboard from './pages/Dashboard';
 import Onboarding from './pages/Onboarding';
+import { LanguageProvider } from './context/LanguageContext';
 
-function App() {
+function AppContent() {
   const [user, setUser] = useState(null);
   const [needsOnboarding, setNeedsOnboarding] = useState(false);
   const [loading, setLoading] = useState(true);
@@ -67,4 +68,10 @@ function App() {
   return <Dashboard />;
 }
 
-export default App;
+export default function App() {
+  return (
+    <LanguageProvider>
+      <AppContent />
+    </LanguageProvider>
+  );
+}
