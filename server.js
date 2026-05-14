@@ -91,24 +91,44 @@ app.post('/api/analizar-comida', upload.single('fotoComida'), async (req, res) =
 
     console.log(`[AI] OpenAI (Vision Low): ${openAiTokens} tokens`);
 
-    // PASO 2: Cerebras (Llama 3.3 70B) hace el trabajo pesado gratis
-    const analysisResponse = await cerebras.chat.completions.create({
-      model: "llama-3.3-70b",
-      messages: [
-        {
-          role: "system",
-          content: "Eres un experto nutricionista. Analiza la lista de ingredientes y devuelve un JSON: {name, calories, protein, carbs, fat, review, healthScore}."
-        },
-        {
-          role: "user",
-          content: `Ingredientes: ${ingredientes}`
-        },
-      ],
-      response_format: { type: "json_object" },
-    });
+    let analysisResponse;
+    try {
+      // PASO 2: Cerebras (Llama 3.3 70B) hace el trabajo pesado gratis
+      analysisResponse = await cerebras.chat.completions.create({
+        model: "llama-3.3-70b",
+        messages: [
+          {
+            role: "system",
+            content: "Eres un experto nutricionista. Analiza la lista de ingredientes y devuelve un JSON: {name, calories, protein, carbs, fat, review, healthScore}."
+          },
+          {
+            role: "user",
+            content: `Ingredientes: ${ingredientes}`
+          },
+        ],
+        response_format: { type: "json_object" },
+      });
+    } catch (cerebrasError) {
+      console.error("Cerebras Error, falling back to OpenAI for analysis:", cerebrasError);
+      // Fallback a OpenAI si Cerebras falla
+      analysisResponse = await openai.chat.completions.create({
+        model: "gpt-4o-mini",
+        messages: [
+          {
+            role: "system",
+            content: "Eres un experto nutricionista. Analiza la lista de ingredientes y devuelve un JSON: {name, calories, protein, carbs, fat, review, healthScore}."
+          },
+          {
+            role: "user",
+            content: `Ingredientes: ${ingredientes}`
+          },
+        ],
+        response_format: { type: "json_object" },
+      });
+    }
 
-    const cerebrasTokens = analysisResponse.usage?.total_tokens || 0;
-    console.log(`[AI] Cerebras (Analytic): ${cerebrasTokens} tokens`);
+    const tokensUsed = analysisResponse.usage?.total_tokens || 0;
+    console.log(`[AI] Analysis Completed: ${tokensUsed} tokens`);
 
     const result = JSON.parse(analysisResponse.choices[0].message.content);
     
@@ -118,15 +138,14 @@ app.post('/api/analizar-comida', upload.single('fotoComida'), async (req, res) =
     return res.status(200).json(result);
   } catch (error) {
     console.error("Server Error:", error);
-    // Fallback de emergencia si OpenAI falla (ej. error 429)
     return res.status(200).json({
-      name: "Fallback Meal (API Limit)",
-      calories: 540,
-      protein: 25,
-      carbs: 60,
-      fat: 18,
-      review: "Placeholder due to OpenAI API limit. Tu imagen se procesó en el backend y se redujo usando Sharp.",
-      healthScore: 7
+      name: "Analysis Error",
+      calories: 0,
+      protein: 0,
+      carbs: 0,
+      fat: 0,
+      review: "Hubo un error al procesar la imagen. Por favor, intenta de nuevo.",
+      healthScore: 0
     });
   }
 });

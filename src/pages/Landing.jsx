@@ -105,7 +105,7 @@ export default function Landing({ onAuthSuccess }) {
   };
 
   const features = [
-    { icon: <Camera className="w-5 h-5" />, title: 'AI Vision Scanner', desc: 'Snap a photo and get instant macro breakdown powered by GPT-4o Vision.', color: 'from-brand to-brand-light' },
+    { icon: <Camera className="w-5 h-5" />, title: 'AI Vision Scanner', desc: 'Snap a photo and get instant macro breakdown powered by AI.', color: 'from-brand to-brand-light' },
     { icon: <BarChart3 className="w-5 h-5" />, title: 'Smart Analytics', desc: 'Track your progress with beautiful charts and AI-powered insights.', color: 'from-azure to-sky' },
     { icon: <Zap className="w-5 h-5" />, title: 'Macro Equilibrador', desc: 'Get personalized meal suggestions to balance your remaining macros.', color: 'from-amber to-coral' },
   ];
@@ -113,7 +113,7 @@ export default function Landing({ onAuthSuccess }) {
   const steps = [
     { num: '01', title: 'Create your profile', desc: 'Tell us your goals and our AI calculates your optimal daily targets.' },
     { num: '02', title: 'Snap your meals', desc: 'Just take a photo. No manual searching or tedious logging required.' },
-    { num: '03', title: 'AI does the rest', desc: 'GPT-4o Vision instantly analyzes ingredients, calories, and macros.' },
+    { num: '03', title: 'AI does the rest', desc: 'AI instantly analyzes ingredients, calories, and macros.' },
   ];
 
   return (
@@ -156,7 +156,7 @@ export default function Landing({ onAuthSuccess }) {
         <motion.div initial={{ opacity: 0, y: 30 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.8, ease: 'easeOut' }} className="text-center max-w-3xl mx-auto">
           <div className={`inline-flex items-center ${t.pillBg} border rounded-full px-4 py-1.5 mb-6`}>
             <Zap className="w-3.5 h-3.5 text-amber mr-2" />
-            <span className={`text-caption font-medium ${t.pillText}`}>Powered by GPT-4o Vision</span>
+            <span className={`text-caption font-medium ${t.pillText}`}>Powered by AI</span>
           </div>
 
           <h1 className="font-display font-extrabold text-[40px] md:text-heading-lg lg:text-display leading-[1.05] tracking-tight mb-5">

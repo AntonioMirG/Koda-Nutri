@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { auth, db } from '../services/firebase';
-import { doc, setDoc, collection } from 'firebase/firestore';
+import { doc, setDoc, collection, getDoc } from 'firebase/firestore';
 import { Sparkles, ArrowRight, ArrowLeft, Target, Dumbbell, UserCircle } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { calculateOnboardingMacros } from '../services/openai';
@@ -8,6 +8,7 @@ import { calculateOnboardingMacros } from '../services/openai';
 export default function Onboarding({ onComplete }) {
   const [step, setStep] = useState(1);
   const [loading, setLoading] = useState(false);
+  const [forbiddenWords, setForbiddenWords] = useState([]);
   const [formData, setFormData] = useState({
     gender: '',
     age: '',
@@ -18,7 +19,20 @@ export default function Onboarding({ onComplete }) {
     username: ''
   });
 
-  const forbiddenWords = ['nigger', 'faggot', 'puta', 'mierda']; // Basic filter as requested
+  React.useEffect(() => {
+    const fetchForbiddenWords = async () => {
+      try {
+        const docRef = doc(db, 'settings', 'forbidden_words');
+        const docSnap = await getDoc(docRef);
+        if (docSnap.exists()) {
+          setForbiddenWords(docSnap.data().words || []);
+        }
+      } catch (error) {
+        console.error("Error fetching forbidden words:", error);
+      }
+    };
+    fetchForbiddenWords();
+  }, []);
 
   const handleNext = () => {
     if (step < 3) setStep(prev => prev + 1);
@@ -93,21 +107,19 @@ export default function Onboarding({ onComplete }) {
       <div className="max-w-md mx-auto w-full relative z-10">
         {/* Step indicator */}
         <div className="mb-8">
-          <div className="flex items-center justify-between mb-8">
+          <div className="flex items-center justify-center mb-8 space-x-2">
             {[1, 2, 3].map(s => (
-              <div key={s} className="flex items-center flex-1">
-                <div className={`w-10 h-10 rounded-xl flex items-center justify-center transition-all duration-300 ${
-                  step >= s 
-                    ? 'bg-gradient-to-br from-brand to-azure text-snow shadow-glow-brand' 
-                    : 'bg-silver-mist/50 text-graphite'
-                }`}>
+              <div key={s} className="flex items-center">
+                <div className={`w-10 h-10 rounded-xl flex items-center justify-center transition-all duration-300 ${step >= s
+                  ? 'bg-gradient-to-br from-brand to-azure text-snow shadow-glow-brand'
+                  : 'bg-silver-mist/50 text-graphite'
+                  }`}>
                   {stepIcons[s - 1]}
                 </div>
                 {s < 3 && (
-                  <div className="flex-1 mx-2">
-                    <div className={`h-0.5 rounded-full transition-all duration-500 ${
-                      step > s ? 'bg-brand' : 'bg-silver-mist'
-                    }`} />
+                  <div className="w-12 mx-1">
+                    <div className={`h-0.5 rounded-full transition-all duration-500 ${step > s ? 'bg-brand' : 'bg-silver-mist'
+                      }`} />
                   </div>
                 )}
               </div>
@@ -135,17 +147,30 @@ export default function Onboarding({ onComplete }) {
               <motion.div key="step1" initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -20 }} transition={{ duration: 0.25 }}>
                 <div className="space-y-4">
                   <div>
+                    <label className="block text-caption font-semibold text-graphite mb-2">Username</label>
+                    <input
+                      type="text"
+                      placeholder="johndoe"
+                      value={formData.username}
+                      onChange={e => updateForm('username', e.target.value)}
+                      className={`w-full bg-fog border-2 rounded-xl px-4 py-3 text-body-sm focus:border-brand transition-colors ${forbiddenWords.some(w => formData.username.toLowerCase().includes(w)) ? 'border-red-500' : 'border-silver-mist/60'
+                        }`}
+                    />
+                    {forbiddenWords.some(w => formData.username.toLowerCase().includes(w)) && (
+                      <p className="text-red-500 text-[10px] mt-1">Invalid username</p>
+                    )}
+                  </div>
+                  <div>
                     <label className="block text-caption font-semibold text-graphite mb-2">Gender</label>
                     <div className="grid grid-cols-2 gap-3">
                       {['Male', 'Female'].map(g => (
                         <button
                           key={g}
                           onClick={() => updateForm('gender', g)}
-                          className={`py-3.5 rounded-xl border-2 font-semibold text-body-sm transition-all duration-200 ${
-                            formData.gender === g
-                              ? 'bg-brand text-snow border-brand shadow-glow-brand'
-                              : 'bg-fog text-ink border-silver-mist/60 hover:border-graphite'
-                          }`}
+                          className={`py-3.5 rounded-xl border-2 font-semibold text-body-sm transition-all duration-200 ${formData.gender === g
+                            ? 'bg-brand text-snow border-brand shadow-glow-brand'
+                            : 'bg-fog text-ink border-silver-mist/60 hover:border-graphite'
+                            }`}
                         >
                           {g}
                         </button>
@@ -176,27 +201,13 @@ export default function Onboarding({ onComplete }) {
                     <div>
                       <label className="block text-caption font-semibold text-graphite mb-2">Height (cm)</label>
                       <input
-                      type="number"
-                      placeholder="175"
-                      value={formData.height}
-                      onChange={e => updateForm('height', e.target.value)}
-                      className="w-full bg-fog border-2 border-silver-mist/60 rounded-xl px-4 py-3 text-body-sm focus:border-brand transition-colors"
-                    />
-                  </div>
-                  <div>
-                    <label className="block text-caption font-semibold text-graphite mb-2">Username</label>
-                    <input
-                      type="text"
-                      placeholder="johndoe"
-                      value={formData.username}
-                      onChange={e => updateForm('username', e.target.value)}
-                      className={`w-full bg-fog border-2 rounded-xl px-4 py-3 text-body-sm focus:border-brand transition-colors ${
-                        forbiddenWords.some(w => formData.username.toLowerCase().includes(w)) ? 'border-red-500' : 'border-silver-mist/60'
-                      }`}
-                    />
-                    {forbiddenWords.some(w => formData.username.toLowerCase().includes(w)) && (
-                      <p className="text-red-500 text-[10px] mt-1">Invalid username</p>
-                    )}
+                        type="number"
+                        placeholder="175"
+                        value={formData.height}
+                        onChange={e => updateForm('height', e.target.value)}
+                        className="w-full bg-fog border-2 border-silver-mist/60 rounded-xl px-4 py-3 text-body-sm focus:border-brand transition-colors"
+                      />
+                    </div>
                   </div>
                 </div>
               </motion.div>
@@ -213,11 +224,10 @@ export default function Onboarding({ onComplete }) {
                     <button
                       key={goal.id}
                       onClick={() => updateForm('goal', goal.id)}
-                      className={`w-full text-left p-4 rounded-xl border-2 transition-all duration-200 flex items-center ${
-                        formData.goal === goal.id
-                          ? 'bg-brand text-snow border-brand shadow-glow-brand'
-                          : 'bg-fog text-ink border-silver-mist/60 hover:border-graphite'
-                      }`}
+                      className={`w-full text-left p-4 rounded-xl border-2 transition-all duration-200 flex items-center ${formData.goal === goal.id
+                        ? 'bg-brand text-snow border-brand shadow-glow-brand'
+                        : 'bg-fog text-ink border-silver-mist/60 hover:border-graphite'
+                        }`}
                     >
                       <span className="text-[24px] mr-4">{goal.emoji}</span>
                       <div>
@@ -242,11 +252,10 @@ export default function Onboarding({ onComplete }) {
                     <button
                       key={life.id}
                       onClick={() => updateForm('lifestyle', life.id)}
-                      className={`w-full text-left p-4 rounded-xl border-2 transition-all duration-200 flex items-center ${
-                        formData.lifestyle === life.id
-                          ? 'bg-brand text-snow border-brand shadow-glow-brand'
-                          : 'bg-fog text-ink border-silver-mist/60 hover:border-graphite'
-                      }`}
+                      className={`w-full text-left p-4 rounded-xl border-2 transition-all duration-200 flex items-center ${formData.lifestyle === life.id
+                        ? 'bg-brand text-snow border-brand shadow-glow-brand'
+                        : 'bg-fog text-ink border-silver-mist/60 hover:border-graphite'
+                        }`}
                     >
                       <span className="text-[24px] mr-4">{life.emoji}</span>
                       <div>

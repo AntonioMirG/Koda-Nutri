@@ -6,33 +6,42 @@ import {
 } from 'recharts';
 import { TrendingDown, TrendingUp, Scale } from 'lucide-react';
 import { motion } from 'framer-motion';
+import jsPDF from 'jspdf';
+import autoTable from 'jspdf-autotable';
 
 const AnalyticsTab = memo(({ weeklyTrendData, targets, macroStats, topFoods, currentWeight, weightChange, weightHistory, allMeals }) => {
-  const exportData = () => {
-    const csvRows = [
-      ['Date', 'Time', 'Meal', 'Calories', 'Protein', 'Carbs', 'Fat', 'HealthScore'],
-      ...allMeals.map(m => [
-        m.timestamp.split('T')[0],
-        m.time,
-        m.name,
-        m.calories,
-        m.protein,
-        m.carbs,
-        m.fat,
-        m.healthScore
-      ])
-    ];
+  const exportPDF = () => {
+    const doc = new jsPDF();
 
-    const csvContent = "data:text/csv;charset=utf-8," 
-      + csvRows.map(e => e.join(",")).join("\n");
+    // Add Title
+    doc.setFontSize(20);
+    doc.text("Koda -  Weekly Report", 14, 22);
+    doc.setFontSize(11);
+    doc.setTextColor(100);
+    doc.text(`Generated on: ${new Date().toLocaleDateString()}`, 14, 30);
 
-    const encodedUri = encodeURI(csvContent);
-    const link = document.createElement("a");
-    link.setAttribute("href", encodedUri);
-    link.setAttribute("download", "nutri_ia_report.csv");
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
+    // Add Summary Table
+    const tableColumn = ["Date", "Time", "Meal", "Calories", "Protein", "Carbs", "Fat"];
+    const tableRows = allMeals.map(m => [
+      m.timestamp.split('T')[0],
+      m.time,
+      m.name,
+      `${m.calories} kcal`,
+      `${m.protein}g`,
+      `${m.carbs}g`,
+      `${m.fat}g`
+    ]);
+
+    autoTable(doc, {
+      head: [tableColumn],
+      body: tableRows,
+      startY: 40,
+      theme: 'grid',
+      headStyles: { fillColor: '#6C5CE7', textColor: [255, 255, 255] },
+      alternateRowStyles: { fillColor: [245, 245, 250] }
+    });
+
+    doc.save("Koda_report.pdf");
   };
 
   const containerVariants = {
@@ -45,15 +54,15 @@ const AnalyticsTab = memo(({ weeklyTrendData, targets, macroStats, topFoods, cur
 
   const itemVariants = {
     hidden: { opacity: 0, y: 16 },
-    visible: { 
-      opacity: 1, 
+    visible: {
+      opacity: 1,
       y: 0,
       transition: { duration: 0.4, ease: "easeOut" }
     }
   };
 
   return (
-    <motion.div 
+    <motion.div
       variants={containerVariants}
       initial="hidden"
       animate="visible"
@@ -64,11 +73,11 @@ const AnalyticsTab = memo(({ weeklyTrendData, targets, macroStats, topFoods, cur
           <h1 className="font-display font-bold text-heading tracking-tight mb-1">Analytics</h1>
           <p className="text-body-sm text-graphite">Monthly performance & health insights</p>
         </div>
-        <button 
-          onClick={exportData}
+        <button
+          onClick={exportPDF}
           className="bg-brand/10 text-brand px-4 py-2 rounded-xl text-caption font-bold hover:bg-brand/20 transition-colors"
         >
-          Export CSV
+          Export PDF
         </button>
       </header>
 
@@ -80,14 +89,14 @@ const AnalyticsTab = memo(({ weeklyTrendData, targets, macroStats, topFoods, cur
             <ResponsiveContainer width="100%" height="100%">
               <BarChart data={weeklyTrendData}>
                 <XAxis dataKey="day" axisLine={false} tickLine={false} tick={{ fontSize: 11, fontWeight: 600, fill: '#8e8e93' }} />
-                <Tooltip 
-                  cursor={{ fill: 'rgba(108,92,231,0.05)' }} 
+                <Tooltip
+                  cursor={{ fill: 'rgba(108,92,231,0.05)' }}
                   contentStyle={{ borderRadius: '12px', border: 'none', boxShadow: '0 4px 20px rgba(0,0,0,0.1)', fontSize: '12px', fontWeight: 600 }}
                   animationDuration={200}
                 />
                 <ReferenceLine y={targets.targetCalories} stroke="#8e8e93" strokeDasharray="4 4" strokeWidth={1} />
-                <Bar 
-                  dataKey="calories" 
+                <Bar
+                  dataKey="calories"
                   radius={[6, 6, 0, 0]}
                   animationDuration={1000}
                   animationEasing="ease-out"
@@ -118,11 +127,11 @@ const AnalyticsTab = memo(({ weeklyTrendData, targets, macroStats, topFoods, cur
             <div className="w-full h-40">
               <ResponsiveContainer width="100%" height="100%">
                 <PieChart>
-                  <Pie 
-                    data={macroStats} 
-                    innerRadius={45} 
-                    outerRadius={62} 
-                    paddingAngle={4} 
+                  <Pie
+                    data={macroStats}
+                    innerRadius={45}
+                    outerRadius={62}
+                    paddingAngle={4}
                     dataKey="value"
                     animationDuration={1000}
                     animationEasing="ease-out"
@@ -156,9 +165,8 @@ const AnalyticsTab = memo(({ weeklyTrendData, targets, macroStats, topFoods, cur
             {topFoods.length > 0 ? topFoods.map((food, i) => (
               <div key={i} className="flex items-center justify-between">
                 <div className="flex items-center">
-                  <div className={`w-7 h-7 rounded-lg flex items-center justify-center mr-3 text-[10px] font-bold ${
-                    i === 0 ? 'bg-brand/10 text-brand' : 'bg-fog text-graphite'
-                  }`}>
+                  <div className={`w-7 h-7 rounded-lg flex items-center justify-center mr-3 text-[10px] font-bold ${i === 0 ? 'bg-brand/10 text-brand' : 'bg-fog text-graphite'
+                    }`}>
                     {i + 1}
                   </div>
                   <span className="text-body-sm font-medium truncate max-w-[160px]">{food.name}</span>
@@ -181,11 +189,10 @@ const AnalyticsTab = memo(({ weeklyTrendData, targets, macroStats, topFoods, cur
                 <div className="text-heading-sm font-bold">{currentWeight} kg</div>
               </div>
             </div>
-            <div className={`flex items-center px-3 py-1.5 rounded-xl text-caption font-bold ${
-              weightChange <= 0 
-                ? 'bg-mint/10 text-mint' 
-                : 'bg-coral/10 text-coral'
-            }`}>
+            <div className={`flex items-center px-3 py-1.5 rounded-xl text-caption font-bold ${weightChange <= 0
+              ? 'bg-mint/10 text-mint'
+              : 'bg-coral/10 text-coral'
+              }`}>
               {weightChange <= 0 ? <TrendingDown className="w-3.5 h-3.5 mr-1.5" /> : <TrendingUp className="w-3.5 h-3.5 mr-1.5" />}
               {Math.abs(weightChange).toFixed(1)} kg
             </div>
@@ -193,12 +200,12 @@ const AnalyticsTab = memo(({ weeklyTrendData, targets, macroStats, topFoods, cur
           <div className="h-44 w-full mb-6">
             <ResponsiveContainer width="100%" height="100%">
               <LineChart data={weightHistory}>
-                <Line 
-                  type="monotone" 
-                  dataKey="weight" 
-                  stroke="#6C5CE7" 
-                  strokeWidth={2.5} 
-                  dot={{ r: 3, fill: '#6C5CE7', stroke: '#fff', strokeWidth: 2 }} 
+                <Line
+                  type="monotone"
+                  dataKey="weight"
+                  stroke="#6C5CE7"
+                  strokeWidth={2.5}
+                  dot={{ r: 3, fill: '#6C5CE7', stroke: '#fff', strokeWidth: 2 }}
                   activeDot={{ r: 5, fill: '#6C5CE7', stroke: '#fff', strokeWidth: 2 }}
                   animationDuration={1000}
                   animationEasing="ease-out"
